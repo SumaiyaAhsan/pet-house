@@ -8,8 +8,9 @@ const petSchema = new mongoose.Schema(
     age: { type: Number, required: true },
     gender: { type: String, enum: ["Male", "Female"], required: true },
     description: { type: String, default: "" },
-    image: { type: String, default: "" },
+    image: { type: String, default: "" }, 
     location: { type: String, required: true },
+    price: { type: Number, default: 0 },
     status: {
       type: String,
       enum: ["pending", "approved", "adopted"],

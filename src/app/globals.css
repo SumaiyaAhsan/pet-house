@@ -45,3 +45,7 @@ h1, h2, h3, h4 {
          focus:outline-none focus:ring-2 focus:ring-[#FF7A45]
          focus:border-transparent transition-all;
 }
+
+.input-field.with-icon {
+  @apply pl-12;
+}
