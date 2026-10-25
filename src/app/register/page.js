@@ -110,8 +110,8 @@ export default function RegisterPage() {
               value={formData.role}
               onChange={(e) => setFormData({ ...formData, role: e.target.value })}
             >
-              <option value="user">Pet Adopter / Owner</option>
-              <option value="shelter">Pet Shelter / Rescue</option>
+              <option value="shelter">Pet Owner</option>
+              <option value="user">Pet Adopter</option>
             </select>
           </div>
 
