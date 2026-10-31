@@ -5,7 +5,8 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import toast from "react-hot-toast";
 
-// A list of beautiful background colors for profile avatars
+
+//colors for profile avatars bg
 const AVATAR_COLORS = [
   "bg-red-500", "bg-orange-500", "bg-amber-500", 
   "bg-green-500", "bg-emerald-500", "bg-teal-500", 
@@ -13,13 +14,15 @@ const AVATAR_COLORS = [
   "bg-pink-500"
 ];
 
-export default function Navbar() {
+
+export default function Navbar(){
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
   const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
+
+  useEffect(() =>{
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));

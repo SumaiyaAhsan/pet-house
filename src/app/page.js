@@ -4,19 +4,25 @@ import { Heart, ShieldCheck, Clock } from "lucide-react";
 export default function Home() {
   return (
     <div className="flex flex-col">
-      {/* Hero Section */}
+
+     
+      {/*Hero Section*/}
       <section className="bg-secondary py-20 px-4 text-center">
         <div className="max-w-4xl mx-auto">
+
           <h1 className="text-5xl md:text-6xl font-heading font-bold text-dark mb-6 leading-tight">
             Find Your New <span className="text-primary">Best Friend</span>
           </h1>
+          
           <p className="text-light text-lg md:text-xl mb-10 max-w-2xl mx-auto">
             Adopt a loving pet or book premium care services. Your journey to a happier home starts here.
           </p>
+          
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/pets" className="btn-primary text-lg px-8 py-4">
               Adopt a Pet
             </Link>
+           
             <Link href="/services" className="btn-secondary text-lg px-8 py-4">
               Book a Service
             </Link>
@@ -24,7 +30,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
+
+
+      {/*Features Section*/}
       <section className="py-20 px-4 max-w-7xl mx-auto w-full">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-heading font-bold text-dark">Why Choose Pet House?</h2>
