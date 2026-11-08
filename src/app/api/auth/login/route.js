@@ -3,15 +3,18 @@ import User from "@/lib/models/User";
 import { comparePassword, generateToken } from "@/lib/auth";
 import { z } from "zod";
 
+
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string(),
 });
 
+
 export async function POST(req) {
   try {
     await connectDB();
     const body = await req.json();
+
 
     // Validate input
     const validation = loginSchema.safeParse(body);
@@ -21,11 +24,15 @@ export async function POST(req) {
 
     const { email, password } = validation.data;
 
+
+
     // Find user
     const user = await User.findOne({ email });
     if (!user) {
       return Response.json({ error: "Invalid credentials" }, { status: 401 });
     }
+
+    
 
     // Check password
     const isMatch = await comparePassword(password, user.password);
@@ -33,6 +40,7 @@ export async function POST(req) {
       return Response.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
+    
     // Generate token
     const token = generateToken({ id: user._id, role: user.role });
 

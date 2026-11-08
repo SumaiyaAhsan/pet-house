@@ -3,16 +3,20 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { PawPrint, Mail, Lock } from "lucide-react";
+import { PawPrint, Mail, Lock, Eye, EyeOff } from "lucide-react";
+
 
 export default function LoginPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // New state for eye toggle
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -27,12 +31,14 @@ export default function LoginPage() {
         throw new Error(data.error || "Invalid credentials");
       }
 
-      // Save token and user info to localStorage
+
+      // Save token and user info
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
       toast.success("Logged in successfully!");
       
+
       // Redirect based on role
       if (data.user.role === "admin") {
         router.push("/admin");
@@ -41,13 +47,17 @@ export default function LoginPage() {
       } else {
         router.push("/");
       }
+     
       
+
     } catch (error) {
       toast.error(error.message);
     } finally {
       setLoading(false);
     }
   };
+
+
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center bg-secondary px-4 sm:px-6 py-12">
@@ -61,7 +71,9 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Email */}
+         
+          {/*Email*/}
+
           <div>
             <label className="block text-sm font-medium text-dark mb-1">Email Address</label>
             <div className="relative">
@@ -77,26 +89,44 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Password */}
+
+          {/*Password*/}
+
           <div>
-            <label className="block text-sm font-medium text-dark mb-1">Password</label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="block text-sm font-medium text-dark">Password</label>
+              <Link href="/forgot-password" className="text-xs text-primary font-semibold hover:underline">
+                   Forgot Password?
+              </Link>
+            </div>
             <div className="relative">
               <Lock className="absolute left-4 top-3.5 text-gray-400 w-5 h-5" />
               <input
-                type="password"
-                required
-                className="input-field !pl-12"
+                type={showPassword ? "text" : "password"} 
+                className="input-field !pl-12 !pr-12"
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               />
+              
+              
+              {/*Eye_Button*/}
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-3.5 text-gray-400 hover:text-primary transition"
+              >
+                {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+              </button>
             </div>
           </div>
+
 
           <button type="submit" disabled={loading} className="btn-primary w-full py-3 mt-2">
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
+
 
         <p className="text-center text-sm text-light mt-6">
           Don't have an account?{" "}

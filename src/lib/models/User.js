@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "shelter", "admin"],
       default: "user",
     },
+    walletBalance: { type: Number, default: 5000 },
     phone: { type: String, default: "" },
     avatar: { type: String, default: "" },
     status: { type: String, enum: ["active", "banned"], default: "active" },

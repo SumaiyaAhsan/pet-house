@@ -3,7 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { PawPrint, User, Mail, Lock } from "lucide-react";
+import { PawPrint, User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -14,6 +14,7 @@ export default function RegisterPage() {
     role: "user",
   });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -85,20 +86,28 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Password */}
+           {/* Password */}
           <div>
             <label className="block text-sm font-medium text-dark mb-1">Password</label>
             <div className="relative">
               <Lock className="absolute left-4 top-3.5 text-gray-400 w-5 h-5" />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
                 minLength={6}
-                className="input-field !pl-12"
+                className="input-field !pl-12 !pr-12"
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               />
+              {/* Eye Toggle Button */}
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-3.5 text-gray-400 hover:text-primary transition"
+              >
+                {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+              </button>
             </div>
           </div>
 

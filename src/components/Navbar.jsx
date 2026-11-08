@@ -5,8 +5,7 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import toast from "react-hot-toast";
 
-
-//colors for profile avatars bg
+// colors for profile avatars bg
 const AVATAR_COLORS = [
   "bg-red-500", "bg-orange-500", "bg-amber-500", 
   "bg-green-500", "bg-emerald-500", "bg-teal-500", 
@@ -14,15 +13,13 @@ const AVATAR_COLORS = [
   "bg-pink-500"
 ];
 
-
-export default function Navbar(){
+export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
   const router = useRouter();
   const pathname = usePathname();
 
-
-  useEffect(() =>{
+  useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
@@ -84,6 +81,13 @@ export default function Navbar(){
             {user ? (
               <div className="flex items-center space-x-4 ml-4 pl-4 border-l border-gray-200">
                 
+                {/* Admin Panel Link */}
+                {user.role === "admin" && (
+                  <Link href="/admin" className="text-sm font-bold text-red-600 hover:underline">
+                    Admin Panel
+                  </Link>
+                )}
+
                 {/* Profile & Logout */}
                 <div className="flex items-center gap-3">
                   {renderAvatar()}
@@ -132,6 +136,14 @@ export default function Navbar(){
                   {renderAvatar()}
                   <span className="text-sm font-bold text-dark">{user.name}</span>
                 </div>
+                
+                {/* Mobile Admin Panel Link */}
+                {user.role === "admin" && (
+                  <Link href="/admin" className="text-sm font-bold text-red-600 text-center py-2 bg-red-50 rounded-lg">
+                    Admin Panel
+                  </Link>
+                )}
+
                 <button onClick={handleLogout} className="btn-secondary text-center py-2 text-red-500 border-red-500 hover:bg-red-50 flex items-center justify-center gap-2">
                   <LogOut className="w-4 h-4" /> Logout
                 </button>
