@@ -9,16 +9,29 @@ import ChatModal from "@/components/ChatModal";
 export default function PetDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
+  
   const [pet, setPet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/pets/${id}`)
+    if (!id) return;
+    
+    // We fetch all pets and find the specific one by ID. 
+    // This bypasses the buggy dynamic API route.
+    fetch("/api/pets/all")
       .then((res) => res.json())
       .then((data) => {
-        if (data.error) throw new Error(data.error);
-        setPet(data);
+        if (Array.isArray(data)) {
+          const foundPet = data.find((p) => p._id === id);
+          if (foundPet) {
+            setPet(foundPet);
+          } else {
+            toast.error("Pet not found in list");
+          }
+        } else {
+          toast.error("Failed to load data");
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -53,7 +66,7 @@ export default function PetDetailsPage() {
         if (!res.ok) throw new Error(data.error);
 
         toast.success(data.message);
-        router.push("/"); // Redirect to home after success
+        router.push("/"); 
       } catch (error) {
         toast.error(error.message);
       }
@@ -63,7 +76,7 @@ export default function PetDetailsPage() {
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-light">Loading...</div>;
-  if (!pet) return <div className="min-h-screen flex items-center justify-center text-light">Pet not found</div>;
+  if (!pet) return <div className="min-h-screen flex items-center justify-center text-light">Pet not found. <Link href="/pets" className="text-primary ml-2 underline">Go back</Link></div>;
 
   return (
     <div className="min-h-screen bg-secondary py-12 px-4 sm:px-6">
@@ -74,7 +87,6 @@ export default function PetDetailsPage() {
 
         <div className="bg-white rounded-3xl shadow-sm overflow-hidden flex flex-col md:flex-row">
           
-          {/* Image Section */}
           <div className="md:w-1/2 h-80 md:h-auto bg-gray-100 relative">
             {pet.image ? (
               <img src={pet.image} alt={pet.name} className="w-full h-full object-cover" />
@@ -90,7 +102,6 @@ export default function PetDetailsPage() {
             </span>
           </div>
 
-          {/* Details Section */}
           <div className="md:w-1/2 p-8 flex flex-col">
             <div className="flex justify-between items-start mb-2">
               <h1 className="text-3xl sm:text-4xl font-heading font-bold text-dark">{pet.name}</h1>
@@ -113,7 +124,6 @@ export default function PetDetailsPage() {
               <p className="text-light leading-relaxed">{pet.description}</p>
             </div>
 
-            {/* Shelter Info */}
             <div className="bg-secondary rounded-xl p-4 mb-8 flex items-center gap-3">
               <ShieldCheck className="text-primary w-8 h-8" />
               <div>
@@ -122,7 +132,6 @@ export default function PetDetailsPage() {
               </div>
             </div>
 
-            {/* Action Buttons (Fiverr Style) */}
             <div className="mt-auto flex flex-col sm:flex-row gap-4">
               <button onClick={() => handleAction("Chat")} className="btn-secondary flex-1 flex items-center justify-center gap-2 py-3">
                 <MessageCircle className="w-5 h-5" /> Message Shelter
@@ -135,7 +144,6 @@ export default function PetDetailsPage() {
         </div>
       </div>
       
-      {/* Chat Modal */}
       <ChatModal 
         isOpen={isChatOpen} 
         onClose={() => setIsChatOpen(false)} 

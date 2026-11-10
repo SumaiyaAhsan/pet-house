@@ -1,5 +1,6 @@
 import connectDB from "@/lib/db";
 import Pet from "../../../../lib/models/Pet";
+import "../../../../lib/models/User"; // Need this to populate
 import { verifyToken } from "@/lib/auth";
 
 export async function GET(req) {
@@ -8,6 +9,7 @@ export async function GET(req) {
     const pets = await Pet.find().sort({ createdAt: -1 }).populate("listedBy", "name email");
     return Response.json(pets);
   } catch (error) {
+    console.error("ADMIN API ERROR:", error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 }
@@ -15,6 +17,7 @@ export async function GET(req) {
 export async function PATCH(req) {
   try {
     await connectDB();
+    
     const authHeader = req.headers.get("authorization");
     if (!authHeader) return Response.json({ error: "Unauthorized" }, { status: 401 });
     const decoded = verifyToken(authHeader.split(" ")[1]);
@@ -28,6 +31,7 @@ export async function PATCH(req) {
     const updatedPet = await Pet.findByIdAndUpdate(petId, { status }, { new: true });
     return Response.json({ message: `Pet ${status} successfully`, pet: updatedPet });
   } catch (error) {
+    console.error("ADMIN API ERROR:", error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 }
