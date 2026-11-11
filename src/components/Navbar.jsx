@@ -81,7 +81,12 @@ export default function Navbar() {
             {user ? (
               <div className="flex items-center space-x-4 ml-4 pl-4 border-l border-gray-200">
                 
-                {/* Admin Panel Link */}
+                {/* Dashboard Link (Desktop) */}
+                <Link href="/dashboard" className="text-sm font-bold text-primary hover:underline">
+                  Dashboard
+                </Link>
+
+                {/* Admin Panel Link (Desktop) */}
                 {user.role === "admin" && (
                   <Link href="/admin" className="text-sm font-bold text-red-600 hover:underline">
                     Admin Panel
@@ -137,7 +142,12 @@ export default function Navbar() {
                   <span className="text-sm font-bold text-dark">{user.name}</span>
                 </div>
                 
-                {/* Mobile Admin Panel Link */}
+                {/* Dashboard Link (Mobile) */}
+                <Link href="/dashboard" className="text-sm font-bold text-primary text-center py-2 bg-primary/10 rounded-lg">
+                  Dashboard
+                </Link>
+
+                {/* Admin Panel Link (Mobile) */}
                 {user.role === "admin" && (
                   <Link href="/admin" className="text-sm font-bold text-red-600 text-center py-2 bg-red-50 rounded-lg">
                     Admin Panel
