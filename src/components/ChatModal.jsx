@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { X, Send } from "lucide-react";
 import toast from "react-hot-toast";
 
-export default function ChatModal({ isOpen, onClose, petId, shelterId, shelterName }) {
+export default function ChatModal({ isOpen, onClose, petId, shelterId, shelterName, currentUser }) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -73,8 +73,16 @@ export default function ChatModal({ isOpen, onClose, petId, shelterId, shelterNa
         
         <div className="bg-primary text-white p-4 flex justify-between items-center">
           <div>
-            <h2 className="font-heading font-bold text-lg">Chat with {shelterName}</h2>
-            <p className="text-xs text-white/80">Asking about this pet</p>
+            <h2 className="font-heading font-bold text-lg">
+              {shelterName.startsWith("Chat with") 
+                ? shelterName 
+                : `Chat with ${shelterName}`}
+            </h2>
+            
+            {/* Only show this line for regular Users (Adopters) */}
+            {currentUser?.role === "user" && (
+              <p className="text-xs text-white/80">Asking about this pet</p>
+            )}
           </div>
           <button onClick={onClose} className="hover:bg-white/20 p-1 rounded-full transition">
             <X className="w-6 h-6" />

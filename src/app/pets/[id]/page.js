@@ -14,6 +14,7 @@ export default function PetDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [chatTarget, setChatTarget] = useState("Shelter"); // Default to Shelter
 
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -39,7 +40,7 @@ export default function PetDetailsPage() {
       });
   }, [id]);
 
-  const handleAction = async (action) => {
+  const handleAction = async (action, target = "Shelter") => {
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error("Please login to continue");
@@ -68,6 +69,7 @@ export default function PetDetailsPage() {
         toast.error(error.message);
       }
     } else if (action === "Chat") {
+      setChatTarget(target);
       setIsChatOpen(true);
     }
   };
@@ -128,25 +130,25 @@ export default function PetDetailsPage() {
                 <p className="font-bold text-dark">{pet.listedBy?.name || "Verified Shelter"}</p>
               </div>
             </div>
+
             {/* Dynamic Action Buttons */}
             <div className="mt-auto flex flex-col sm:flex-row gap-4">
               
-              {/* 1. ADMIN: Both Buttons (Styled like your request) */}
+              {/* 1. ADMIN: Both Buttons */}
               {currentUser?.role === "admin" ? (
                 <>
-                  <button onClick={() => handleAction("Chat")} className="btn-primary flex-1 flex items-center justify-center gap-2 py-3">
+                  <button onClick={() => handleAction("Chat", "Shelter")} className="btn-primary flex-1 flex items-center justify-center gap-2 py-3">
                     <MessageCircle className="w-5 h-5" /> Message Shelter
                   </button>
-                  <button onClick={() => handleAction("Chat")} className="btn-secondary flex-1 flex flex-col items-center justify-center py-2 leading-tight">
-                    <span className="text-sm">Message</span>
-                    <span className="text-sm font-bold">Adopter</span>
+                  <button onClick={() => handleAction("Chat", "Adopter")} className="btn-secondary flex-1 flex items-center justify-center gap-2 py-3">
+                    <MessageCircle className="w-5 h-5" /> Message Adopter
                   </button>
                 </>
               ) : 
               
               /* 2. SHELTER: Message Adopter only */
               currentUser?.role === "shelter" ? (
-                <button onClick={() => handleAction("Chat")} className="btn-secondary flex-1 flex items-center justify-center gap-2 py-3">
+                <button onClick={() => handleAction("Chat", "Adopter")} className="btn-secondary flex-1 flex items-center justify-center gap-2 py-3">
                   <MessageCircle className="w-5 h-5" /> Message Adopter
                 </button>
               ) : 
@@ -154,7 +156,7 @@ export default function PetDetailsPage() {
               /* 3. USER (Adopter): Message Shelter + Adopt Now */
               (
                 <>
-                  <button onClick={() => handleAction("Chat")} className="btn-secondary flex-1 flex items-center justify-center gap-2 py-3">
+                  <button onClick={() => handleAction("Chat", "Shelter")} className="btn-secondary flex-1 flex items-center justify-center gap-2 py-3">
                     <MessageCircle className="w-5 h-5" /> Message Shelter
                   </button>
                   <button onClick={() => handleAction("Payment")} className="btn-primary flex-1 flex items-center justify-center gap-2 py-3">
@@ -173,7 +175,8 @@ export default function PetDetailsPage() {
         onClose={() => setIsChatOpen(false)} 
         petId={pet._id} 
         shelterId={pet.listedBy?._id} 
-        shelterName={pet.listedBy?.name || "Shelter"} 
+        shelterName={chatTarget === "Adopter" ? "Adopter" : (pet.listedBy?.name || "Shelter")} 
+        currentUser={currentUser}  
       />
     </div>
   );
