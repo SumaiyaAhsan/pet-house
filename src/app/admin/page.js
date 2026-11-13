@@ -9,31 +9,44 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  const user = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user") || "{}") : {};
-
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+
     if (!token || user.role !== "admin") {
       toast.error("Access Denied. Admins only.");
       router.push("/login");
       return;
     }
-    fetchPets();
-  }, []);
 
-  const fetchPets = async () => {
-    try {
-      const res = await fetch("/api/admin/pets");
-      const data = await res.json();
-      if (Array.isArray(data)) setPets(data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fetchPets = async () => {
+      try {
+        const res = await fetch("/api/admin/pets", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        const data = await res.json();
+        
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to load pets");
+        }
+        
+        if (Array.isArray(data)) {
+          setPets(data);
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error(error.message);
+      } finally {
+        setLoading(false); 
+      }
+    };
+
+    fetchPets();
+  }, [router]);
 
   const handleAction = async (petId, status) => {
+    const token = localStorage.getItem("token");
     try {
       const res = await fetch("/api/admin/pets", {
         method: "PATCH",
@@ -47,13 +60,19 @@ export default function AdminDashboard() {
       if (!res.ok) throw new Error("Action failed");
       
       toast.success(`Pet ${status} successfully!`);
-      fetchPets(); 
+      
+      const updatedRes = await fetch("/api/admin/pets", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const updatedData = await updatedRes.json();
+      if (Array.isArray(updatedData)) setPets(updatedData);
+
     } catch (error) {
       toast.error(error.message);
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading dashboard...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-light">Loading dashboard...</div>;
 
   return (
     <div className="min-h-screen bg-secondary py-12 px-4 sm:px-6">
@@ -68,7 +87,7 @@ export default function AdminDashboard() {
           <h2 className="text-xl font-bold mb-4">Pet Listing Approvals</h2>
           
           {pets.length === 0 ? (
-            <p className="text-light">No pets found.</p>
+            <p className="text-light">No pets found. (Or database is empty)</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
@@ -100,7 +119,7 @@ export default function AdminDashboard() {
                             <button onClick={() => handleAction(pet._id, "approved")} className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition" title="Approve">
                               <CheckCircle className="w-5 h-5" />
                             </button>
-                            <button onClick={() => handleAction(pet._id, "adopted")} className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg transition" title="Reject">
+                            <button onClick={() => handleAction(pet._id, "rejected")} className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg transition" title="Reject">
                               <XCircle className="w-5 h-5" />
                             </button>
                           </>

@@ -13,22 +13,21 @@ export default function PetDetailsPage() {
   const [pet, setPet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) setCurrentUser(JSON.parse(user));
+
     if (!id) return;
     
-    // We fetch all pets and find the specific one by ID. 
-    // This bypasses the buggy dynamic API route.
     fetch("/api/pets/all")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
           const foundPet = data.find((p) => p._id === id);
-          if (foundPet) {
-            setPet(foundPet);
-          } else {
-            toast.error("Pet not found in list");
-          }
+          if (foundPet) setPet(foundPet);
+          else toast.error("Pet not found in list");
         } else {
           toast.error("Failed to load data");
         }
@@ -61,10 +60,8 @@ export default function PetDetailsPage() {
           },
           body: JSON.stringify({ petId: pet._id }),
         });
-
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
-
         toast.success(data.message);
         router.push("/"); 
       } catch (error) {
@@ -131,14 +128,41 @@ export default function PetDetailsPage() {
                 <p className="font-bold text-dark">{pet.listedBy?.name || "Verified Shelter"}</p>
               </div>
             </div>
-
+            {/* Dynamic Action Buttons */}
             <div className="mt-auto flex flex-col sm:flex-row gap-4">
-              <button onClick={() => handleAction("Chat")} className="btn-secondary flex-1 flex items-center justify-center gap-2 py-3">
-                <MessageCircle className="w-5 h-5" /> Message Shelter
-              </button>
-              <button onClick={() => handleAction("Payment")} className="btn-primary flex-1 flex items-center justify-center gap-2 py-3">
-                <Heart className="w-5 h-5" /> Adopt Now
-              </button>
+              
+              {/* 1. ADMIN: Both Buttons (Styled like your request) */}
+              {currentUser?.role === "admin" ? (
+                <>
+                  <button onClick={() => handleAction("Chat")} className="btn-primary flex-1 flex items-center justify-center gap-2 py-3">
+                    <MessageCircle className="w-5 h-5" /> Message Shelter
+                  </button>
+                  <button onClick={() => handleAction("Chat")} className="btn-secondary flex-1 flex flex-col items-center justify-center py-2 leading-tight">
+                    <span className="text-sm">Message</span>
+                    <span className="text-sm font-bold">Adopter</span>
+                  </button>
+                </>
+              ) : 
+              
+              /* 2. SHELTER: Message Adopter only */
+              currentUser?.role === "shelter" ? (
+                <button onClick={() => handleAction("Chat")} className="btn-secondary flex-1 flex items-center justify-center gap-2 py-3">
+                  <MessageCircle className="w-5 h-5" /> Message Adopter
+                </button>
+              ) : 
+              
+              /* 3. USER (Adopter): Message Shelter + Adopt Now */
+              (
+                <>
+                  <button onClick={() => handleAction("Chat")} className="btn-secondary flex-1 flex items-center justify-center gap-2 py-3">
+                    <MessageCircle className="w-5 h-5" /> Message Shelter
+                  </button>
+                  <button onClick={() => handleAction("Payment")} className="btn-primary flex-1 flex items-center justify-center gap-2 py-3">
+                    <Heart className="w-5 h-5" /> Adopt Now
+                  </button>
+                </>
+              )}
+              
             </div>
           </div>
         </div>

@@ -1,42 +1,47 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { MapPin, Search } from "lucide-react";
+import AuthModal from "@/components/AuthModal";
 
 export default function BrowsePetsPage() {
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    // Only fetch if we are in the browser
-    if (typeof window === "undefined") return;
-
-    const loadPets = async () => {
-      try {
-        const res = await fetch("/api/pets/all");
-        const data = await res.json();
-        
+    fetch("/api/pets/all")
+      .then((res) => res.json())
+      .then((data) => {
         if (Array.isArray(data)) {
           setPets(data);
         } else {
           setPets([]);
         }
-      } catch (err) {
-        console.error("Fetch error:", err);
-        setPets([]);
-      } finally {
         setLoading(false);
-      }
-    };
-
-    loadPets();
+      })
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
   }, []);
 
   const filteredPets = pets.filter((pet) =>
     pet.name?.toLowerCase().includes(search.toLowerCase()) ||
     pet.species?.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleViewDetails = (petId) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setIsAuthModalOpen(true); // Show popup
+    } else {
+      router.push(`/pets/${petId}`); // Go to details
+    }
+  };
 
   return (
     <div className="min-h-screen bg-secondary py-12 px-4 sm:px-6">
@@ -105,15 +110,23 @@ export default function BrowsePetsPage() {
                     <MapPin className="w-4 h-4 mr-1 text-primary" /> {pet.location}
                   </div>
                   
-                  <Link href={`/pets/${pet._id}`} className="btn-primary text-center w-full mt-auto py-2.5 text-sm">
-                   View Details
-                  </Link>
+                  <button 
+                    onClick={() => handleViewDetails(pet._id)} 
+                    className="btn-primary text-center w-full mt-auto py-2.5 text-sm"
+                  >
+                    View Details
+                  </button>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+      />
     </div>
   );
 }

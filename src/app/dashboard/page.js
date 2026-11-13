@@ -2,12 +2,12 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import toast from "react-hot-toast";
-import { Wallet, PawPrint, PlusCircle, Edit, CheckCircle, XCircle } from "lucide-react";
+import { Wallet, PawPrint, PlusCircle, Edit, Clock } from "lucide-react";
 
 export default function DashboardPage() {
   const [user, setUser] = useState(null);
   const [pets, setPets] = useState([]);
+  const [adoptions, setAdoptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -18,25 +18,36 @@ export default function DashboardPage() {
       return;
     }
 
+    // Fetch user profile first
     fetch("/api/user/profile", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
-      .then((data) => {
-        setUser(data);
-        if (data.role === "shelter") {
+      .then((userData) => {
+        setUser(userData);
+        
+        // Now fetch data based on role
+        if (userData.role === "shelter") {
           return fetch("/api/shelter/pets", {
             headers: { Authorization: `Bearer ${token}` },
-          }).then((res) => res.json());
+          })
+            .then((res) => res.json())
+            .then((petsData) => {
+              if (Array.isArray(petsData)) setPets(petsData);
+            });
+        } else if (userData.role === "user") {
+          return fetch("/api/user/adoptions", {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+            .then((res) => res.json())
+            .then((adoptionsData) => {
+              if (Array.isArray(adoptionsData)) setAdoptions(adoptionsData);
+            });
         }
-        return [];
       })
-      .then((petsData) => {
-        if (Array.isArray(petsData)) setPets(petsData);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+      .catch((err) => console.error("Dashboard error:", err))
+      .finally(() => setLoading(false));
+  }, [router]);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-light">Loading Dashboard...</div>;
   if (!user) return null;
@@ -58,18 +69,20 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Wallet Card */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm mb-8 flex items-center gap-4 border-l-4 border-primary">
-          <div className="bg-secondary p-3 rounded-full">
-            <Wallet className="w-8 h-8 text-primary" />
+        {/* Wallet Card - ONLY FOR USERS (Adopters) */}
+        {user.role === "user" && (
+          <div className="bg-white rounded-2xl p-6 shadow-sm mb-8 flex items-center gap-4 border-l-4 border-primary">
+            <div className="bg-secondary p-3 rounded-full">
+              <Wallet className="w-8 h-8 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-light">Current Wallet Balance</p>
+              <p className="text-3xl font-bold text-dark">৳ {user.walletBalance}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm text-light">Current Wallet Balance</p>
-            <p className="text-3xl font-bold text-dark">৳ {user.walletBalance}</p>
-          </div>
-        </div>
+        )}
 
-        {/* Shelter Pet Management */}
+        {/* SHELTER VIEW: My Pets */}
         {user.role === "shelter" && (
           <div>
             <h2 className="text-2xl font-heading font-bold text-dark mb-4">My Pet Listings</h2>
@@ -102,16 +115,40 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* User Adoptions (Placeholder for now) */}
+        {/* USER VIEW: My Adoptions */}
         {user.role === "user" && (
-          <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
-            <PawPrint className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h2 className="text-xl font-bold mb-2">Ready to Adopt?</h2>
-            <p className="text-light mb-4">Browse our lovely pets and find your new best friend.</p>
-            <Link href="/pets" className="btn-primary">Browse Pets</Link>
+          <div className="mt-4">
+            <h2 className="text-2xl font-heading font-bold text-dark mb-4">My Adoptions</h2>
+            {adoptions.length === 0 ? (
+              <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
+                <PawPrint className="w-12 h-12 text-primary mx-auto mb-4" />
+                <h2 className="text-xl font-bold mb-2">Ready to Adopt?</h2>
+                <p className="text-light mb-4">You haven't adopted any pets yet. Browse our lovely pets and find your new best friend.</p>
+                <Link href="/pets" className="btn-primary">Browse Pets</Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {adoptions.map((tx) => (
+                  <div key={tx._id} className="bg-white rounded-2xl p-4 shadow-sm flex gap-4 items-center border-l-4 border-green-500">
+                    {tx.pet?.image ? (
+                      <img src={tx.pet.image} alt={tx.pet.name} className="w-20 h-20 object-cover rounded-xl" />
+                    ) : (
+                      <div className="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center">No Img</div>
+                    )}
+                    <div className="flex-grow">
+                      <h3 className="font-bold text-dark text-lg">{tx.pet?.name || "Deleted Pet"}</h3>
+                      <p className="text-xs text-light capitalize mb-1">{tx.pet?.species} • {tx.pet?.breed}</p>
+                      <p className="text-sm font-bold text-green-600">Paid: ৳{tx.amount}</p>
+                      <p className="text-xs text-light flex items-center gap-1 mt-1">
+                        <Clock className="w-3 h-3" /> {new Date(tx.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
-
       </div>
     </div>
   );
