@@ -1,7 +1,6 @@
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import SiteChrome from "@/components/SiteChrome";
 
 export const metadata = {
   title: "Pet House | Adopt & Care",
@@ -10,14 +9,10 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className="flex flex-col min-h-screen">
+    <html lang="en" data-scroll-behavior="smooth">
+      <body className="flex flex-col min-h-screen" suppressHydrationWarning>
         <Toaster position="top-center" />
-        <Navbar />
-        <main className="flex-grow">
-          {children}
-        </main>
-        <Footer />
+        <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { PawPrint, User, Mail, Lock, Eye, EyeOff } from "lucide-react";
@@ -43,15 +44,30 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center bg-secondary px-4 sm:px-6 py-12">
-      <div className="card w-full max-w-md p-6 sm:p-8 bg-white">
-        <div className="text-center mb-8">
-          <div className="bg-secondary w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <PawPrint className="text-primary w-8 h-8" />
-          </div>
-          <h1 className="text-2xl font-heading font-bold text-dark">Create an Account</h1>
-          <p className="text-light text-sm mt-1">Join Pet House today</p>
+    <main className="grid min-h-[calc(100vh-88px)] bg-secondary lg:grid-cols-[1fr_0.95fr]">
+      <section className="relative hidden overflow-hidden bg-[#111214] lg:block">
+        <Image
+          src="/registration.jpg"
+          alt="A woman holding her adopted dog"
+          fill
+          sizes="(min-width: 1024px) 50vw, 100vw"
+          className="object-cover opacity-55"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#111214] via-[#111214]/20 to-transparent" />
+        <div className="relative flex h-full flex-col justify-end p-12 text-white">
+          <PawPrint className="mb-5 h-10 w-10 text-primary" />
+          <p className="max-w-lg font-heading text-4xl font-bold leading-tight">
+            Give a pet a beginning worth wagging about.
+          </p>
         </div>
+      </section>
+      <section className="flex items-center justify-center px-5 py-12 sm:px-10">
+        <div className="w-full max-w-md">
+          <div className="mb-8">
+            <p className="section-kicker mb-3">Join Pet House</p>
+            <h1 className="section-heading !text-4xl">Create an account</h1>
+            <p className="mt-3 text-sm text-light">Adopt a companion or share a pet in need of a home.</p>
+          </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Name */}
@@ -135,7 +151,8 @@ export default function RegisterPage() {
             Login here
           </Link>
         </p>
-      </div>
-    </div>
+        </div>
+      </section>
+    </main>
   );
 }

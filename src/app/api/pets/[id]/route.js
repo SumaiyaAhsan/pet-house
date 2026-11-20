@@ -5,7 +5,7 @@ import { verifyToken } from "@/lib/auth";
 
 // Helper to get ID from URL
 function getIdFromUrl(req) {
-  const urlParts = req.url.split("/");
+  const urlParts = new URL(req.url).pathname.split("/");
   return urlParts[urlParts.length - 1];
 }
 
@@ -13,10 +13,20 @@ export async function GET(req) {
   try {
     await connectDB();
     const id = getIdFromUrl(req);
-    
-    const pet = await Pet.findById(id).populate("listedBy", "name email phone");
+    const optimized = new URL(req.url).searchParams.get("optimized") === "1";
+    let query = Pet.findById(id);
+    if (optimized) query = query.select("-image");
+
+    const pet = await query.populate("listedBy", "name email phone").lean();
     if (!pet) return Response.json({ error: "Pet not found" }, { status: 404 });
-    
+
+    if (optimized) {
+      return Response.json({
+        ...pet,
+        image: `/api/pets/${pet._id}/image?v=${pet.updatedAt?.getTime() ?? 0}`,
+      });
+    }
+
     return Response.json(pet);
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

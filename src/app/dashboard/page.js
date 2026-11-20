@@ -87,7 +87,7 @@ export default function DashboardPage() {
           <div>
             <h2 className="text-2xl font-heading font-bold text-dark mb-4">My Pet Listings</h2>
             {pets.length === 0 ? (
-              <p className="text-light">You haven't listed any pets yet.</p>
+              <p className="text-light">You haven&apos;t listed any pets yet.</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {pets.map((pet) => (
@@ -123,7 +123,7 @@ export default function DashboardPage() {
               <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
                 <PawPrint className="w-12 h-12 text-primary mx-auto mb-4" />
                 <h2 className="text-xl font-bold mb-2">Ready to Adopt?</h2>
-                <p className="text-light mb-4">You haven't adopted any pets yet. Browse our lovely pets and find your new best friend.</p>
+                <p className="text-light mb-4">You haven&apos;t adopted any pets yet. Browse our lovely pets and find your new best friend.</p>
                 <Link href="/pets" className="btn-primary">Browse Pets</Link>
               </div>
             ) : (

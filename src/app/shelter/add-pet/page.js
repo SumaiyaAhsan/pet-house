@@ -82,14 +82,18 @@ export default function AddPetPage() {
   };
 
   return (
-    <div className="min-h-screen bg-secondary py-12 px-4 sm:px-6">
-      <div className="max-w-3xl mx-auto">
-        <Link href="/" className="flex items-center gap-2 text-light hover:text-primary mb-6">
-          <ArrowLeft className="w-4 h-4" /> Back to Home
+    <main className="min-h-screen bg-secondary py-10 px-4 sm:px-6 sm:py-16">
+      <div className="mx-auto max-w-4xl">
+        <Link href="/" className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#e1dccf] bg-white px-4 py-2 text-sm font-semibold text-light transition-colors hover:border-primary hover:text-primary">
+          <ArrowLeft className="h-4 w-4" /> Back to home
         </Link>
 
-        <div className="card bg-white p-6 sm:p-8">
-          <h1 className="text-2xl sm:text-3xl font-heading font-bold text-dark mb-6">Add a New Pet</h1>
+        <div className="overflow-hidden rounded-[2rem] border border-[#ebe7df] bg-white p-6 shadow-sm sm:p-8 lg:p-10">
+          <p className="section-kicker mb-3">Rehome a pet</p>
+          <h1 className="section-heading mb-2 !text-4xl">Share a pet&apos;s story</h1>
+          <p className="mb-8 max-w-xl text-sm leading-6 text-light">
+            Add clear details and a photo so the right family can find this pet. Listings are reviewed before they go live.
+          </p>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Image Upload */}
@@ -177,6 +181,6 @@ export default function AddPetPage() {
           </form>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

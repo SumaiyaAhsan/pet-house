@@ -13,7 +13,7 @@ const petSchema = new mongoose.Schema(
     price: { type: Number, default: 0 },
     status: {
       type: String,
-      enum: ["pending", "approved", "adopted"],
+      enum: ["pending", "approved", "rejected", "adopted"],
       default: "pending",
     },
     listedBy: {
@@ -24,5 +24,7 @@ const petSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+petSchema.index({ status: 1, createdAt: -1 });
 
 export default mongoose.models.Pet || mongoose.model("Pet", petSchema);

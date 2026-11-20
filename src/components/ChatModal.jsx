@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { X, Send } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -12,7 +12,7 @@ export default function ChatModal({ isOpen, onClose, petId, shelterId, shelterNa
   const user = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user") || "{}") : {};
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     if (!user._id || !shelterId || !petId) return;
     try {
       const res = await fetch(`/api/messages?sender=${user._id}&receiver=${shelterId}&pet=${petId}`);
@@ -21,15 +21,18 @@ export default function ChatModal({ isOpen, onClose, petId, shelterId, shelterNa
     } catch (error) {
       console.error(error);
     }
-  };
+  }, [petId, shelterId, user._id]);
 
   useEffect(() => {
     if (isOpen) {
-      fetchMessages();
+      const initialFetch = setTimeout(fetchMessages, 0);
       const interval = setInterval(fetchMessages, 3000);
-      return () => clearInterval(interval);
+      return () => {
+        clearTimeout(initialFetch);
+        clearInterval(interval);
+      };
     }
-  }, [isOpen, petId, shelterId]);
+  }, [isOpen, fetchMessages]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });

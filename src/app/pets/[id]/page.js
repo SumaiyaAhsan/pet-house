@@ -13,31 +13,25 @@ export default function PetDetailsPage() {
   const [pet, setPet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser] = useState(() =>
+    typeof window === "undefined" ? null : JSON.parse(localStorage.getItem("user") || "null")
+  );
   const [chatTarget, setChatTarget] = useState("Shelter"); // Default to Shelter
 
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (user) setCurrentUser(JSON.parse(user));
-
     if (!id) return;
     
-    fetch("/api/pets/all")
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          const foundPet = data.find((p) => p._id === id);
-          if (foundPet) setPet(foundPet);
-          else toast.error("Pet not found in list");
-        } else {
-          toast.error("Failed to load data");
-        }
-        setLoading(false);
+    fetch(`/api/pets/${id}?optimized=1`)
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to load pet details");
+        if (data.status !== "approved") throw new Error("Pet not found in list");
+        setPet(data);
       })
       .catch((err) => {
-        toast.error("Failed to load pet details");
-        setLoading(false);
-      });
+        toast.error(err.message || "Failed to load pet details");
+      })
+      .finally(() => setLoading(false));
   }, [id]);
 
   const handleAction = async (action, target = "Shelter") => {
@@ -78,19 +72,21 @@ export default function PetDetailsPage() {
   if (!pet) return <div className="min-h-screen flex items-center justify-center text-light">Pet not found. <Link href="/pets" className="text-primary ml-2 underline">Go back</Link></div>;
 
   return (
-    <div className="min-h-screen bg-secondary py-12 px-4 sm:px-6">
-      <div className="max-w-5xl mx-auto">
-        <Link href="/pets" className="flex items-center gap-2 text-light hover:text-primary mb-6 font-medium">
-          <ArrowLeft className="w-4 h-4" /> Back to Browse
+    <main className="min-h-screen bg-secondary py-10 px-4 sm:px-6 sm:py-16">
+      <div className="mx-auto max-w-6xl">
+        <Link href="/pets" className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#e1dccf] bg-white px-4 py-2 text-sm font-semibold text-light transition-colors hover:border-primary hover:text-primary">
+          <ArrowLeft className="h-4 w-4" /> Back to adoptable pets
         </Link>
 
-        <div className="bg-white rounded-3xl shadow-sm overflow-hidden flex flex-col md:flex-row">
+        <div className="overflow-hidden rounded-[2rem] border border-[#ebe7df] bg-white shadow-sm lg:grid lg:grid-cols-[1.05fr_0.95fr]">
           
-          <div className="md:w-1/2 h-80 md:h-auto bg-gray-100 relative">
+          <div className="relative min-h-[360px] bg-[#efe9df] lg:min-h-[620px]">
             {pet.image ? (
-              <img src={pet.image} alt={pet.name} className="w-full h-full object-cover" />
+              <img src={pet.image} alt={pet.name} className="absolute inset-0 h-full w-full object-cover" />
             ) : (
-              <div className="flex items-center justify-center h-full text-gray-400">No Image</div>
+              <div className="flex h-full min-h-[360px] items-center justify-center text-gray-400 lg:min-h-[620px]">
+                <Heart className="h-16 w-16 text-primary/40" />
+              </div>
             )}
             <span className={`absolute top-4 right-4 px-3 py-1 text-sm font-bold rounded-lg shadow-md ${
               pet.status === "approved" ? "bg-green-100 text-green-700" :
@@ -101,21 +97,22 @@ export default function PetDetailsPage() {
             </span>
           </div>
 
-          <div className="md:w-1/2 p-8 flex flex-col">
-            <div className="flex justify-between items-start mb-2">
-              <h1 className="text-3xl sm:text-4xl font-heading font-bold text-dark">{pet.name}</h1>
-              <span className="text-2xl font-bold text-primary">
+          <div className="flex flex-col p-6 sm:p-8 lg:p-10">
+            <p className="section-kicker mb-3">{pet.species} companion</p>
+            <div className="flex justify-between items-start mb-3 gap-4">
+              <h1 className="section-heading !text-4xl sm:!text-5xl">{pet.name}</h1>
+              <span className="shrink-0 rounded-full bg-secondary px-4 py-2 text-lg font-bold text-dark">
                 {pet.price > 0 ? `৳${pet.price}` : "Free"}
               </span>
             </div>
 
-            <p className="text-light font-medium mb-6 capitalize">
+            <p className="mb-6 text-sm font-medium text-light capitalize">
               {pet.species} • {pet.breed || "Mixed"} • {pet.age} Years • {pet.gender}
             </p>
 
-            <div className="flex items-center text-light mb-6 pb-6 border-b border-gray-100">
-              <MapPin className="w-5 h-5 mr-2 text-primary" /> 
-              <span className="font-medium text-dark">Location:</span> {pet.location}
+            <div className="mb-6 flex items-center gap-2 border-y border-[#eee9e1] py-4 text-sm text-light">
+              <MapPin className="h-5 w-5 text-primary" />
+              <span className="font-semibold text-dark">Location:</span> {pet.location}
             </div>
 
             <div className="mb-8">
@@ -123,8 +120,8 @@ export default function PetDetailsPage() {
               <p className="text-light leading-relaxed">{pet.description}</p>
             </div>
 
-            <div className="bg-secondary rounded-xl p-4 mb-8 flex items-center gap-3">
-              <ShieldCheck className="text-primary w-8 h-8" />
+            <div className="mb-8 flex items-center gap-3 rounded-2xl bg-secondary p-4">
+              <ShieldCheck className="h-8 w-8 shrink-0 text-primary" />
               <div>
                 <p className="text-sm text-light">Listed by</p>
                 <p className="font-bold text-dark">{pet.listedBy?.name || "Verified Shelter"}</p>
@@ -178,6 +175,6 @@ export default function PetDetailsPage() {
         shelterName={chatTarget === "Adopter" ? "Adopter" : (pet.listedBy?.name || "Shelter")} 
         currentUser={currentUser}  
       />
-    </div>
+    </main>
   );
 }

@@ -35,6 +35,7 @@ export default function LoginPage() {
       // Save token and user info
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
+      window.dispatchEvent(new Event("pet-house:user-updated"));
 
       toast.success("Logged in successfully!");
       
@@ -60,15 +61,24 @@ export default function LoginPage() {
 
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center bg-secondary px-4 sm:px-6 py-12">
-      <div className="card w-full max-w-md p-6 sm:p-8 bg-white">
-        <div className="text-center mb-8">
-          <div className="bg-secondary w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <PawPrint className="text-primary w-8 h-8" />
-          </div>
-          <h1 className="text-2xl font-heading font-bold text-dark">Welcome Back</h1>
-          <p className="text-light text-sm mt-1">Login to your Pet House account</p>
+    <main className="grid min-h-[calc(100vh-88px)] bg-secondary lg:grid-cols-[1fr_0.95fr]">
+      <section className="relative hidden overflow-hidden bg-[#111214] lg:block">
+        <img src="/hero-dog.jpg" alt="A happy adopted dog" className="absolute inset-0 h-full w-full object-cover opacity-55" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#111214] via-[#111214]/20 to-transparent" />
+        <div className="relative flex h-full flex-col justify-end p-12 text-white">
+          <PawPrint className="mb-5 h-10 w-10 text-primary" />
+          <p className="max-w-lg font-heading text-4xl font-bold leading-tight">
+            A safer way to find a friend and a loving home.
+          </p>
         </div>
+      </section>
+      <section className="flex items-center justify-center px-5 py-12 sm:px-10">
+        <div className="w-full max-w-md">
+          <div className="mb-8">
+            <p className="section-kicker mb-3">Welcome back</p>
+            <h1 className="section-heading !text-4xl">Login to Pet House</h1>
+            <p className="mt-3 text-sm text-light">Continue where you left off.</p>
+          </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
          
@@ -129,12 +139,13 @@ export default function LoginPage() {
 
 
         <p className="text-center text-sm text-light mt-6">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/register" className="text-primary font-semibold hover:underline">
             Register here
           </Link>
         </p>
-      </div>
-    </div>
+        </div>
+      </section>
+    </main>
   );
 }

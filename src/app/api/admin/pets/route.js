@@ -6,7 +6,11 @@ import { verifyToken } from "@/lib/auth";
 export async function GET(req) {
   try {
     await connectDB();
-    const pets = await Pet.find().sort({ createdAt: -1 }).populate("listedBy", "name email");
+    const pets = await Pet.find()
+      .select("name species breed status listedBy createdAt")
+      .sort({ createdAt: -1 })
+      .populate("listedBy", "name")
+      .lean();
     return Response.json(pets);
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
