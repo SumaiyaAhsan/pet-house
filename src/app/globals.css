@@ -68,12 +68,17 @@ h4 {
 
 .hero-title {
   margin: 0;
-  max-width: 520px;
+  max-width: 560px;
   font-family: "Poppins", sans-serif;
-  font-size: clamp(2.75rem, 5.7vw, 5rem);
+  font-size: clamp(2.35rem, 3.6vw, 3.25rem);
   font-weight: 800;
-  letter-spacing: -0.075em;
-  line-height: 1.03;
+  letter-spacing: -0.06em;
+  line-height: 1.08;
+}
+
+.hero-title > span {
+  display: block;
+  white-space: nowrap;
 }
 
 .hero-description {
@@ -106,7 +111,7 @@ h4 {
 }
 
 .hero-pet-carousel {
-  width: min(100%, 1140px);
+  width: min(100%, 1200px);
   margin: 0 auto 2rem;
 }
 
@@ -117,9 +122,9 @@ h4 {
 .hero-pet-carousel__slide {
   grid-area: 1 / 1;
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
   align-items: center;
-  gap: 2rem;
+  gap: clamp(3rem, 7vw, 6rem);
   min-width: 0;
   opacity: 0;
   pointer-events: none;
@@ -261,6 +266,15 @@ h4 {
   @apply overflow-hidden rounded-[1.75rem] border border-[#ebe7df] bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl;
 }
 
+.card.pet-listing-card {
+  border-width: 2px;
+  border-color: #ffedd5;
+}
+
+.card.pet-listing-card:hover {
+  border-color: #fed7aa;
+}
+
 .input-field {
   @apply w-full rounded-xl border border-[#e5e0d7] bg-white px-4 py-3 text-[#111214] transition-all placeholder:text-[#a19d95] focus:border-primary focus:outline-none focus:ring-4 focus:ring-orange-100;
 }
@@ -276,7 +290,7 @@ h4 {
   }
 
   .hero-title {
-    font-size: clamp(2rem, 8vw, 2.75rem);
+    font-size: clamp(1.5rem, 7vw, 2.4rem);
   }
 
   .hero-pet-carousel__copy {
@@ -290,6 +304,17 @@ h4 {
 
   .section-wrap {
     width: min(100% - 2rem, 1200px);
+  }
+}
+
+@media (min-width: 769px) and (max-width: 900px) {
+  .hero-pet-carousel__slide {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .hero-pet-carousel__image {
+    aspect-ratio: 1.6;
   }
 }
 

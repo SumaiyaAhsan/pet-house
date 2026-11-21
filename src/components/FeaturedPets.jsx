@@ -2,17 +2,21 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ArrowUpRight, MapPin, PawPrint } from "lucide-react";
 
 export default function FeaturedPets() {
+  const pathname = usePathname();
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (pathname !== "/") return;
+
     let cancelled = false;
 
-    fetch("/api/pets/all?limit=3")
+    fetch("/api/pets/all?limit=3", { cache: "no-store" })
       .then(async (response) => {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || "Failed to load pets");
@@ -29,7 +33,7 @@ export default function FeaturedPets() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <section className="section-wrap py-20 sm:py-28" aria-labelledby="featured-pets-heading">

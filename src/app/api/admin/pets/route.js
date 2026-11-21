@@ -3,7 +3,16 @@ import Pet from "../../../../lib/models/Pet";
 import "../../../../lib/models/User"; 
 import { verifyToken } from "@/lib/auth";
 
+function getAdmin(req) {
+  const authorization = req.headers.get("authorization");
+  if (!authorization?.startsWith("Bearer ")) return null;
+  const decoded = verifyToken(authorization.slice(7));
+  return decoded?.role === "admin" ? decoded : null;
+}
+
 export async function GET(req) {
+  if (!getAdmin(req)) return Response.json({ error: "Admin access required." }, { status: 403 });
+
   try {
     await connectDB();
     const pets = await Pet.find()
@@ -13,27 +22,36 @@ export async function GET(req) {
       .lean();
     return Response.json(pets);
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error("Admin pet listings failed:", error.name || "Unknown error");
+    return Response.json({ error: "Unable to load pet listings." }, { status: 500 });
   }
 }
 
 export async function PATCH(req) {
+  if (!getAdmin(req)) return Response.json({ error: "Admin access required." }, { status: 403 });
+
   try {
     await connectDB();
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) return Response.json({ error: "Unauthorized" }, { status: 401 });
-    
-    const decoded = verifyToken(authHeader.split(" ")[1]);
-    if (!decoded || decoded.role !== "admin") {
-      return Response.json({ error: "Only admins can do this" }, { status: 403 });
+    const body = await req.json();
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return Response.json({ error: "Invalid pet review action." }, { status: 400 });
+    }
+    const { petId, status } = body;
+    if (!petId || !["approved", "rejected"].includes(status)) {
+      return Response.json({ error: "Invalid pet review action." }, { status: 400 });
     }
 
-    const body = await req.json();
-    const { petId, status } = body;
-
-    const updatedPet = await Pet.findByIdAndUpdate(petId, { status }, { new: true });
+    const updatedPet = await Pet.findOneAndUpdate(
+      { _id: petId, status: "pending" },
+      { $set: { status } },
+      { new: true, runValidators: true }
+    );
+    if (!updatedPet) {
+      return Response.json({ error: "This pet is no longer awaiting review." }, { status: 409 });
+    }
     return Response.json({ message: `Pet ${status} successfully`, pet: updatedPet });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error("Admin pet review failed:", error.name || "Unknown error");
+    return Response.json({ error: "Unable to update this pet listing." }, { status: 500 });
   }
 }

@@ -20,12 +20,22 @@ export async function POST(req) {
 
     // 2. Get data from frontend
     const body = await req.json();
-    
-    // 3. Create the pet
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return Response.json({ error: "Invalid pet listing." }, { status: 400 });
+    }
     const pet = await Pet.create({
-      ...body,
+      name: body.name,
+      species: body.species,
+      breed: body.breed,
+      age: body.age,
+      gender: body.gender,
+      description: body.description,
+      healthInfo: typeof body.healthInfo === "string" ? body.healthInfo.slice(0, 2000) : "",
+      image: body.image,
+      location: body.location,
+      price: body.price,
       listedBy: decoded.id,
-      status: "pending" // Admin needs to approve it
+      status: "pending",
     });
 
     return Response.json({ message: "Pet added successfully", pet }, { status: 201 });

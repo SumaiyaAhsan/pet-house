@@ -6,7 +6,7 @@ export async function GET(_request, { params }) {
   try {
     await connectDB();
     const { id } = await params;
-    const pet = await Pet.findOne({ _id: id, status: "approved" })
+    const pet = await Pet.findOne({ _id: id, status: { $in: ["approved", "reserved", "adopted"] } })
       .select("image")
       .lean();
 

@@ -46,7 +46,8 @@ export default function LoginPage() {
       } else if (data.user.role === "shelter") {
         router.push("/shelter/add-pet");
       } else {
-        router.push("/");
+        const next = new URLSearchParams(window.location.search).get("next");
+        router.push(/^\/payment\/[a-f\d]{24}$/i.test(next || "") ? next : "/");
       }
      
       

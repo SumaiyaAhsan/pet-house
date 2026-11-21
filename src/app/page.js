@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowUpRight,
   Heart,
@@ -6,8 +7,10 @@ import {
   Home as HomeIcon,
   PawPrint,
   ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 import FeaturedPets from "@/components/FeaturedPets";
+import FAQSection from "@/components/FAQSection";
 import HeroPetCarousel from "@/components/HeroPetCarousel";
 
 const adoptionSteps = [
@@ -55,6 +58,14 @@ const platformFeatures = [
   },
 ];
 
+const petCategories = [
+  { name: "Bird", species: "Bird", image: "/bird.jpg" },
+  { name: "Cat", species: "Cat", image: "/cat.jpg" },
+  { name: "Dog", species: "Dog", image: "/dog.jpg" },
+  { name: "Rabbit", species: "Rabbit", image: "/rabbit 🐇.jpeg" },
+  { name: "Hamster", species: "Hamster", image: "/ham.jpg" },
+];
+
 export default function Home() {
   return (
     <div className="overflow-hidden bg-secondary">
@@ -90,6 +101,43 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="bg-white py-8 sm:py-10" aria-labelledby="pet-categories-heading">
+        <div className="section-wrap">
+          <div className="mb-7 flex items-center gap-2">
+            <Sparkles aria-hidden="true" className="h-7 w-7 text-primary" />
+            <h2 id="pet-categories-heading" className="font-heading text-2xl font-bold tracking-tight text-dark sm:text-3xl">
+              Top Categories
+            </h2>
+          </div>
+          <ul className="grid grid-cols-2 justify-items-center gap-x-4 gap-y-6 sm:grid-cols-3 md:grid-cols-5">
+            {petCategories.map((category) => (
+              <li key={category.species} className="w-full">
+                <Link
+                  href={`/pets?species=${encodeURIComponent(category.species)}`}
+                  aria-label={`Browse ${category.name} pets`}
+                  className="group flex h-full flex-col items-center gap-3 rounded-2xl px-2 py-2 text-center transition-transform hover:-translate-y-1 focus-visible:outline-offset-4"
+                >
+                  <span className="relative block aspect-square w-full max-w-[176px] rounded-full border-[3px] border-orange-200 bg-secondary p-1 transition-colors group-hover:border-orange-300">
+                    <span className="relative block h-full w-full overflow-hidden rounded-full">
+                      <Image
+                        src={category.image}
+                        alt=""
+                        fill
+                        sizes="(max-width: 640px) 42vw, (max-width: 1024px) 28vw, 176px"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </span>
+                  </span>
+                  <span className="font-heading text-base font-bold text-dark sm:text-lg">
+                    {category.name}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
       <section id="how-it-works" className="section-wrap py-20 sm:py-28">
         <div className="mx-auto mb-11 max-w-2xl text-center sm:mb-14">
           <p className="section-kicker mb-3">A simple way to start</p>
@@ -99,7 +147,7 @@ export default function Home() {
           {adoptionSteps.map((step) => {
             const Icon = step.icon;
             return (
-              <article key={step.number} className="rounded-[1.75rem] border border-[#ebe7df] bg-white p-6 sm:p-7">
+              <article key={step.number} className="rounded-[1.75rem] border-2 border-orange-100 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-orange-200 hover:shadow-lg sm:p-7">
                 <div className="mb-8 flex items-center justify-between">
                   <span className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-primary">
                     <Icon className="h-6 w-6" />
@@ -137,7 +185,7 @@ export default function Home() {
             {platformFeatures.map((feature) => {
               const Icon = feature.icon;
               return (
-                <article key={feature.title} className="rounded-[1.75rem] bg-secondary p-6 sm:p-8">
+                <article key={feature.title} className="rounded-[1.75rem] border-2 border-orange-100 bg-secondary p-6 transition-all duration-300 hover:-translate-y-1 hover:border-orange-200 hover:shadow-lg sm:p-8">
                   <span className="mb-8 flex h-12 w-12 items-center justify-center rounded-full bg-white text-primary shadow-sm">
                     <Icon className="h-6 w-6" />
                   </span>
@@ -149,6 +197,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <FAQSection />
 
       <section className="section-wrap py-20 sm:py-28">
         <div className="relative overflow-hidden rounded-[2rem] bg-primary px-6 py-12 text-center text-dark sm:px-12 sm:py-16">

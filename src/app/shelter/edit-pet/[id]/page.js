@@ -131,6 +131,12 @@ export default function EditPetPage() {
                 value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })}></textarea>
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-dark mb-1">Health Information (Optional)</label>
+              <textarea rows="3" maxLength="2000" className="input-field"
+                value={formData.healthInfo || ""} onChange={(e) => setFormData({ ...formData, healthInfo: e.target.value })}></textarea>
+            </div>
+
             <button type="submit" disabled={saving} className="btn-primary w-full py-3 text-lg">
               {saving ? "Saving..." : "Save Changes"}
             </button>

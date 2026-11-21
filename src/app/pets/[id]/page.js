@@ -3,7 +3,15 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { MapPin, ArrowLeft, MessageCircle, Heart, ShieldCheck } from "lucide-react";
+import {
+  MapPin,
+  ArrowLeft,
+  MessageCircle,
+  Heart,
+  ShieldCheck,
+  HeartPulse,
+  PawPrint,
+} from "lucide-react";
 import ChatModal from "@/components/ChatModal";
 
 export default function PetDetailsPage() {
@@ -13,6 +21,7 @@ export default function PetDetailsPage() {
   const [pet, setPet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [activeImage, setActiveImage] = useState(null);
   const [currentUser] = useState(() =>
     typeof window === "undefined" ? null : JSON.parse(localStorage.getItem("user") || "null")
   );
@@ -38,30 +47,12 @@ export default function PetDetailsPage() {
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error("Please login to continue");
-      router.push("/login");
+      router.push(`/login?next=${encodeURIComponent(`/payment/${pet._id}`)}`);
       return;
     }
 
     if (action === "Payment") {
-      const confirmPay = window.confirm(`Are you sure you want to pay ৳${pet.price} to adopt ${pet.name}?`);
-      if (!confirmPay) return;
-
-      try {
-        const res = await fetch("/api/checkout", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ petId: pet._id }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-        toast.success(data.message);
-        router.push("/"); 
-      } catch (error) {
-        toast.error(error.message);
-      }
+      router.push(`/payment/${pet._id}`);
     } else if (action === "Chat") {
       setChatTarget(target);
       setIsChatOpen(true);
@@ -71,109 +62,230 @@ export default function PetDetailsPage() {
   if (loading) return <div className="min-h-screen flex items-center justify-center text-light">Loading...</div>;
   if (!pet) return <div className="min-h-screen flex items-center justify-center text-light">Pet not found. <Link href="/pets" className="text-primary ml-2 underline">Go back</Link></div>;
 
+  const images = [...new Set([pet.image, ...(Array.isArray(pet.images) ? pet.images : [])].filter(Boolean))];
+  const shownImage = activeImage || images[0];
+  const careDetails = [pet.healthInfo, pet.healthStatus, pet.medicalHistory]
+    .filter((detail) => typeof detail === "string" && detail.trim());
+  const careChecks = [
+    pet.healthChecked && "Health checked",
+    pet.vaccinated && "Vaccinated",
+    pet.vetApproved && "Vet approved",
+  ].filter(Boolean);
+  const isAdopter = currentUser?.role === "user";
+
   return (
-    <main className="min-h-screen bg-secondary py-10 px-4 sm:px-6 sm:py-16">
-      <div className="mx-auto max-w-6xl">
-        <Link href="/pets" className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#e1dccf] bg-white px-4 py-2 text-sm font-semibold text-light transition-colors hover:border-primary hover:text-primary">
+    <main className="min-h-screen bg-secondary px-4 py-8 sm:px-6 sm:py-12">
+      <div className="mx-auto max-w-[1400px]">
+        <Link
+          href="/pets"
+          className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#e1dccf] bg-white px-4 py-2.5 text-sm font-semibold text-light shadow-sm transition-colors hover:border-primary hover:text-primary"
+        >
           <ArrowLeft className="h-4 w-4" /> Back to adoptable pets
         </Link>
 
-        <div className="overflow-hidden rounded-[2rem] border border-[#ebe7df] bg-white shadow-sm lg:grid lg:grid-cols-[1.05fr_0.95fr]">
-          
-          <div className="relative min-h-[360px] bg-[#efe9df] lg:min-h-[620px]">
-            {pet.image ? (
-              <img src={pet.image} alt={pet.name} className="absolute inset-0 h-full w-full object-cover" />
-            ) : (
-              <div className="flex h-full min-h-[360px] items-center justify-center text-gray-400 lg:min-h-[620px]">
-                <Heart className="h-16 w-16 text-primary/40" />
-              </div>
-            )}
-            <span className={`absolute top-4 right-4 px-3 py-1 text-sm font-bold rounded-lg shadow-md ${
-              pet.status === "approved" ? "bg-green-100 text-green-700" :
-              pet.status === "pending" ? "bg-yellow-100 text-yellow-700" :
-              "bg-red-100 text-red-700"
-            }`}>
-              {pet.status.toUpperCase()}
-            </span>
-          </div>
+        <p className="mb-5 text-center text-sm font-medium text-light">
+          <span className="text-dark">04-01. Adoptable Pets</span>
+          <span className="mx-2">•</span> Adoptable Pet Details
+        </p>
 
-          <div className="flex flex-col p-6 sm:p-8 lg:p-10">
-            <p className="section-kicker mb-3">{pet.species} companion</p>
-            <div className="flex justify-between items-start mb-3 gap-4">
-              <h1 className="section-heading !text-4xl sm:!text-5xl">{pet.name}</h1>
-              <span className="shrink-0 rounded-full bg-secondary px-4 py-2 text-lg font-bold text-dark">
-                {pet.price > 0 ? `৳${pet.price}` : "Free"}
+        <div className="grid items-stretch gap-5 xl:grid-cols-[minmax(230px,0.85fr)_minmax(380px,1.35fr)_minmax(260px,0.9fr)] xl:gap-6">
+          <section className="order-2 rounded-[1.75rem] border border-white bg-white p-3 shadow-sm xl:order-1">
+            <div className="flex h-full flex-col rounded-[1.35rem] bg-[#f7f6f4] p-5 sm:p-6">
+              <p className="section-kicker mb-3">{pet.species} companion</p>
+              <h1 className="font-heading text-3xl font-bold tracking-[-0.06em] text-dark sm:text-4xl">
+                {pet.name}
+              </h1>
+              <p className="mt-2 text-sm font-medium capitalize text-light">
+                {pet.species} <span className="mx-1">·</span> {pet.breed || "Mixed breed"}
+              </p>
+
+              <div className="mt-7">
+                <h2 className="font-heading text-lg font-bold text-dark">About {pet.name}</h2>
+                <p className="mt-2 text-sm leading-6 text-light">
+                  {pet.description || `Meet ${pet.name}, a lovely ${pet.species?.toLowerCase()} looking for a caring home.`}
+                </p>
+              </div>
+
+              <div className="mt-6 space-y-4 border-t border-[#e8e4de] pt-5">
+                <div className="flex items-start gap-3 text-sm">
+                  <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                  <div>
+                    <p className="text-light">From</p>
+                    <p className="font-semibold text-dark">{pet.location || "Location not provided"}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 text-sm">
+                  <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                  <div>
+                    <p className="text-light">Listed by</p>
+                    <p className="font-semibold text-dark">{pet.listedBy?.name || "Verified Shelter"}</p>
+                  </div>
+                </div>
+              </div>
+
+              {isAdopter && (
+                <div className="mt-auto pt-6">
+                  <div className="rounded-2xl border border-[#f0e9df] bg-white p-4">
+                    <div className="mb-3 flex items-center gap-2">
+                      <HeartPulse className="h-5 w-5 text-primary" />
+                      <h2 className="font-heading text-sm font-bold text-dark">Health & care</h2>
+                    </div>
+                    {careDetails.length || careChecks.length ? (
+                      <ul className="space-y-2 text-xs leading-5 text-light">
+                        {careChecks.map((detail) => (
+                          <li key={detail} className="flex items-center gap-2">
+                            <ShieldCheck className="h-4 w-4 shrink-0 text-primary" /> {detail}
+                          </li>
+                        ))}
+                        {careDetails.map((detail) => <li key={detail}>{detail}</li>)}
+                      </ul>
+                    ) : (
+                      <p className="text-xs leading-5 text-light">
+                        Contact the shelter for health and vaccination records.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+
+          <section className="order-1 flex min-w-0 flex-col gap-4 xl:order-2" aria-label={`${pet.name} photos`}>
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[1.75rem] border border-white bg-[#ece7df] shadow-sm sm:aspect-[5/4] xl:aspect-[4/3]">
+              {shownImage ? (
+                <img
+                  src={shownImage}
+                  alt={pet.name}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  <Heart className="h-20 w-20 text-primary/40" />
+                </div>
+              )}
+              <span className="absolute right-4 top-4 rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-green-700 shadow-sm">
+                {pet.status}
               </span>
             </div>
 
-            <p className="mb-6 text-sm font-medium text-light capitalize">
-              {pet.species} • {pet.breed || "Mixed"} • {pet.age} Years • {pet.gender}
-            </p>
+            {images.length > 1 && (
+              <div className="flex justify-center gap-3" aria-label="Choose a pet photo">
+                {images.map((image, index) => (
+                  <button
+                    key={image}
+                    type="button"
+                    onClick={() => setActiveImage(image)}
+                    aria-label={`Show photo ${index + 1}`}
+                    aria-pressed={shownImage === image}
+                    className={`h-16 w-16 overflow-hidden rounded-xl border-2 bg-white transition sm:h-20 sm:w-20 ${
+                      shownImage === image ? "border-dark shadow-sm" : "border-white hover:border-primary"
+                    }`}
+                  >
+                    <img src={image} alt="" className="h-full w-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
 
-            <div className="mb-6 flex items-center gap-2 border-y border-[#eee9e1] py-4 text-sm text-light">
-              <MapPin className="h-5 w-5 text-primary" />
-              <span className="font-semibold text-dark">Location:</span> {pet.location}
-            </div>
+          <section className="order-3 rounded-[1.75rem] border border-white bg-white p-3 shadow-sm">
+            <div className="flex h-full flex-col rounded-[1.35rem] bg-[#f7f6f4] p-5 sm:p-6">
+              <p className="text-sm font-semibold text-light">Adoption fee</p>
+              <p className="mt-1 font-heading text-4xl font-bold tracking-[-0.06em] text-dark">
+                {pet.price > 0 ? `৳${pet.price}` : "Free"}
+              </p>
+              <p className="mt-2 text-xs leading-5 text-light">
+                Adoption fee details can be confirmed with the shelter.
+              </p>
 
-            <div className="mb-8">
-              <h3 className="font-heading font-bold text-lg mb-2">About {pet.name}</h3>
-              <p className="text-light leading-relaxed">{pet.description}</p>
-            </div>
+              <div className="mt-6 rounded-2xl bg-white p-4">
+                <h2 className="mb-4 font-heading text-sm font-bold text-dark">Pet details</h2>
+                <dl className="grid grid-cols-2 gap-x-3 gap-y-4 text-sm">
+                  <div>
+                    <dt className="text-xs text-light">Age</dt>
+                    <dd className="mt-1 font-semibold text-dark">{pet.age} {Number(pet.age) === 1 ? "year" : "years"}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-light">Gender</dt>
+                    <dd className="mt-1 font-semibold text-dark">{pet.gender}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-light">Breed</dt>
+                    <dd className="mt-1 font-semibold text-dark">{pet.breed || "Mixed"}</dd>
+                  </div>
+                  {pet.weight !== undefined && pet.weight !== null && pet.weight !== "" && (
+                    <div>
+                      <dt className="text-xs text-light">Weight</dt>
+                      <dd className="mt-1 font-semibold text-dark">{pet.weight}</dd>
+                    </div>
+                  )}
+                </dl>
+                {isAdopter && (
+                  <div className="mt-4 border-t border-[#eee9e1] pt-4">
+                    <p className="text-xs text-light">Health information</p>
+                    <p className="mt-1 flex items-start gap-2 text-sm font-medium leading-5 text-dark">
+                      <HeartPulse className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      {careDetails[0] || (careChecks.length ? careChecks.join(", ") : "Ask the shelter for health records")}
+                    </p>
+                  </div>
+                )}
+              </div>
 
-            <div className="mb-8 flex items-center gap-3 rounded-2xl bg-secondary p-4">
-              <ShieldCheck className="h-8 w-8 shrink-0 text-primary" />
-              <div>
-                <p className="text-sm text-light">Listed by</p>
-                <p className="font-bold text-dark">{pet.listedBy?.name || "Verified Shelter"}</p>
+              <div className="mt-auto flex flex-col gap-3 pt-6">
+                {currentUser?.role === "admin" ? (
+                  <>
+                    <button
+                      onClick={() => handleAction("Chat", "Shelter")}
+                      className="btn-primary flex w-full items-center justify-center gap-2 py-3.5"
+                    >
+                      <MessageCircle className="h-5 w-5" /> Message Shelter
+                    </button>
+                    <button
+                      onClick={() => handleAction("Chat", "Adopter")}
+                      className="btn-secondary flex w-full items-center justify-center gap-2 py-3"
+                    >
+                      <MessageCircle className="h-5 w-5" /> Message Adopter
+                    </button>
+                  </>
+                ) : currentUser?.role === "shelter" ? (
+                  <button
+                    onClick={() => handleAction("Chat", "Adopter")}
+                    className="btn-secondary flex w-full items-center justify-center gap-2 py-3.5"
+                  >
+                    <MessageCircle className="h-5 w-5" /> Message Adopter
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handleAction("Payment")}
+                      className="group flex w-full items-center justify-center gap-3 rounded-full bg-dark px-5 py-3.5 font-semibold text-white shadow-sm transition hover:bg-primary hover:text-dark"
+                    >
+                      Adopt This Pet
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-dark transition group-hover:bg-white">
+                        <PawPrint className="h-4 w-4" />
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => handleAction("Chat", "Shelter")}
+                      className="btn-secondary flex w-full items-center justify-center gap-2 py-3"
+                    >
+                      <MessageCircle className="h-5 w-5" /> Message Shelter
+                    </button>
+                  </>
+                )}
               </div>
             </div>
-
-            {/* Dynamic Action Buttons */}
-            <div className="mt-auto flex flex-col sm:flex-row gap-4">
-              
-              {/* 1. ADMIN: Both Buttons */}
-              {currentUser?.role === "admin" ? (
-                <>
-                  <button onClick={() => handleAction("Chat", "Shelter")} className="btn-primary flex-1 flex items-center justify-center gap-2 py-3">
-                    <MessageCircle className="w-5 h-5" /> Message Shelter
-                  </button>
-                  <button onClick={() => handleAction("Chat", "Adopter")} className="btn-secondary flex-1 flex items-center justify-center gap-2 py-3">
-                    <MessageCircle className="w-5 h-5" /> Message Adopter
-                  </button>
-                </>
-              ) : 
-              
-              /* 2. SHELTER: Message Adopter only */
-              currentUser?.role === "shelter" ? (
-                <button onClick={() => handleAction("Chat", "Adopter")} className="btn-secondary flex-1 flex items-center justify-center gap-2 py-3">
-                  <MessageCircle className="w-5 h-5" /> Message Adopter
-                </button>
-              ) : 
-              
-              /* 3. USER (Adopter): Message Shelter + Adopt Now */
-              (
-                <>
-                  <button onClick={() => handleAction("Chat", "Shelter")} className="btn-secondary flex-1 flex items-center justify-center gap-2 py-3">
-                    <MessageCircle className="w-5 h-5" /> Message Shelter
-                  </button>
-                  <button onClick={() => handleAction("Payment")} className="btn-primary flex-1 flex items-center justify-center gap-2 py-3">
-                    <Heart className="w-5 h-5" /> Adopt Now
-                  </button>
-                </>
-              )}
-              
-            </div>
-          </div>
+          </section>
         </div>
       </div>
-      
-      <ChatModal 
-        isOpen={isChatOpen} 
-        onClose={() => setIsChatOpen(false)} 
-        petId={pet._id} 
-        shelterId={pet.listedBy?._id} 
-        shelterName={chatTarget === "Adopter" ? "Adopter" : (pet.listedBy?.name || "Shelter")} 
-        currentUser={currentUser}  
+
+      <ChatModal
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        petId={pet._id}
+        shelterId={pet.listedBy?._id}
+        shelterName={chatTarget === "Adopter" ? "Adopter" : (pet.listedBy?.name || "Shelter")}
+        currentUser={currentUser}
       />
     </main>
   );

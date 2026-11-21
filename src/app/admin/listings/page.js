@@ -3,15 +3,18 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { CheckCircle, Heart, PawPrint } from "lucide-react";
+import { CheckCircle, Clock3, Heart, PawPrint } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
 
 function ListingGroup({ title, description, pets, status }) {
   const isAdopted = status === "adopted";
+  const isReserved = status === "reserved";
   const accent = isAdopted
     ? "bg-indigo-100 text-indigo-800"
-    : "bg-emerald-100 text-emerald-800";
-  const StatusIcon = isAdopted ? Heart : CheckCircle;
+    : isReserved
+      ? "bg-orange-100 text-orange-800"
+      : "bg-emerald-100 text-emerald-800";
+  const StatusIcon = isAdopted ? Heart : isReserved ? Clock3 : CheckCircle;
 
   return (
     <section className="min-h-[420px] rounded-[2rem] border border-[#ebe7df] bg-white p-5 shadow-sm sm:p-7">
@@ -111,6 +114,7 @@ export default function AdminListingsPage() {
   }, [reload, router]);
 
   const approvedPets = pets.filter((pet) => pet.status === "approved");
+  const reservedPets = pets.filter((pet) => pet.status === "reserved");
   const adoptedPets = pets.filter((pet) => pet.status === "adopted");
 
   return (
@@ -155,6 +159,12 @@ export default function AdminListingsPage() {
                 description="Pets available to meet and adopt."
                 pets={approvedPets}
                 status="approved"
+              />
+              <ListingGroup
+                title="Reserved"
+                description="Pets with an active order awaiting completion."
+                pets={reservedPets}
+                status="reserved"
               />
               <ListingGroup
                 title="Adopted"

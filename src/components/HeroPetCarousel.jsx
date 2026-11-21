@@ -7,32 +7,32 @@ const petSlides = [
   {
     src: "/p-3.jpg",
     animal: "dog",
-    headline: "Find Your Loyal Best Friend",
+    headlineLines: ["Find Your Loyal", "Best Friend"],
   },
   {
     src: "/p-1.jpg",
     animal: "cat",
-    headline: "A Purr-fect Match Awaits",
+    headlineLines: ["A Purr-fect Match", "Awaits"],
   },
   {
     src: "/p-2.jpg",
     animal: "bird",
-    headline: "Spread Your Wings With a New Friend",
+    headlineLines: ["Spread Your Wings", "With a New Friend"],
   },
   {
     src: "/p-4.jpg",
     animal: "bird",
-    headline: "A Little Pocket of Happiness",
+    headlineLines: ["A Little Pocket", "Of Happiness"],
   },
   {
     src: "/p-5.jpg",
     animal: "bird",
-    headline: "Spread Your Wings With a New Friend",
+    headlineLines: ["Spread Your Wings", "With a New Friend"],
   },
   {
     src: "/p-6.jpg",
     animal: "rabbit",
-    headline: "Hop Into a New Beginning",
+    headlineLines: ["Hop Into A New", "Beginning"],
   },
 ];
 
@@ -64,13 +64,17 @@ export default function HeroPetCarousel() {
             key={slide.src}
             className={`hero-pet-carousel__slide${index === activeIndex ? " hero-pet-carousel__slide--active" : ""}`}
             aria-hidden={index !== activeIndex}
-            aria-label={`${index + 1} of ${petSlides.length}: ${slide.headline}`}
+            aria-label={`${index + 1} of ${petSlides.length}: ${slide.headlineLines.join(" ")}`}
             role="group"
             aria-roledescription="slide"
           >
             <div className="hero-pet-carousel__copy">
               <p className="hero-pet-carousel__kicker">Meet your match</p>
-              <h1 className="hero-title">{slide.headline}</h1>
+              <h1 className="hero-title" aria-label={slide.headlineLines.join(" ")}>
+                {slide.headlineLines.map((line) => (
+                  <span key={line}>{line}</span>
+                ))}
+              </h1>
             </div>
             <div className="hero-pet-carousel__image">
               <Image
@@ -91,7 +95,7 @@ export default function HeroPetCarousel() {
             key={slide.src}
             type="button"
             className={`hero-pet-carousel__indicator${index === activeIndex ? " hero-pet-carousel__indicator--active" : ""}`}
-            aria-label={`Show ${slide.animal}: ${slide.headline}`}
+            aria-label={`Show ${slide.animal}: ${slide.headlineLines.join(" ")}`}
             aria-pressed={index === activeIndex}
             onClick={() => setActiveIndex(index)}
           />

@@ -6,6 +6,7 @@ const footerLinks = [
   { label: "Rehome a pet", href: "/shelter/add-pet" },
   { label: "Create an account", href: "/register" },
   { label: "Login", href: "/login" },
+  { label: "Contact Us", href: "/contact" },
 ];
 
 export default function Footer() {
