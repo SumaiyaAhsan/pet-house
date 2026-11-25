@@ -15,8 +15,18 @@ export async function getChatParticipants(pet, user) {
   const userId = user._id.toString();
 
   if (user.role === "user") {
-    const hasOrder = await Transaction.exists({ pet: pet._id, buyer: user._id });
-    return pet.status === "approved" || hasOrder ? [ownerId] : [];
+    const [hasOrder, previousSenders, previousReceivers] = await Promise.all([
+      Transaction.exists({ pet: pet._id, buyer: user._id }),
+      Message.distinct("sender", { pet: pet._id, receiver: user._id }),
+      Message.distinct("receiver", { pet: pet._id, sender: user._id }),
+    ]);
+    const participants = new Set([
+      ...(pet.status === "approved" || hasOrder ? [ownerId] : []),
+      ...previousSenders.map((id) => id.toString()),
+      ...previousReceivers.map((id) => id.toString()),
+    ]);
+    participants.delete(userId);
+    return [...participants];
   }
 
   if (user.role === "shelter" && userId !== ownerId) return [];

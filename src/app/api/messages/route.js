@@ -20,6 +20,12 @@ function serializeMessages(messages) {
   }));
 }
 
+function getRecipientRoles(role) {
+  if (role === "admin") return ["user", "shelter"];
+  if (role === "shelter") return ["user", "admin"];
+  return ["shelter", "admin"];
+}
+
 export async function GET(request) {
   const decoded = getAuthUser(request);
   if (!decoded?.id || !mongoose.isValidObjectId(decoded.id)) {
@@ -47,12 +53,10 @@ export async function GET(request) {
     if (!pet) return Response.json({ error: "Pet not found." }, { status: 404 });
 
     const participantIds = await getChatParticipants(pet, user);
-    const recipientRoles =
-      user.role === "admin" ? ["user", "shelter"] : user.role === "shelter" ? ["user"] : ["shelter"];
     const participants = await User.find({
       _id: { $in: participantIds },
       status: "active",
-      role: { $in: recipientRoles },
+      role: { $in: getRecipientRoles(user.role) },
     })
       .select("_id name role")
       .sort({ name: 1 })
@@ -146,8 +150,11 @@ export async function POST(request) {
       User.findById(receiverId).select("_id name email role status").lean(),
     ]);
     if (!pet) return Response.json({ error: "Pet not found." }, { status: 404 });
-    if (!recipient || recipient.status !== "active" || recipient.role === "admin") {
+    if (!recipient || recipient.status !== "active") {
       return Response.json({ error: "Message recipient is unavailable." }, { status: 404 });
+    }
+    if (!getRecipientRoles(sender.role).includes(recipient.role)) {
+      return Response.json({ error: "You cannot message this user about this pet." }, { status: 403 });
     }
 
     const participantIds = await getChatParticipants(pet, sender);

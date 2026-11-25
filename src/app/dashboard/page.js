@@ -6,7 +6,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { PawPrint, PlusCircle, Edit, Clock, MapPin, ArrowUpRight, MessageCircle } from "lucide-react";
 import toast from "react-hot-toast";
-import DashboardMessages from "@/components/DashboardMessages";
 import ScrollReveal from "@/components/ScrollReveal";
 
 function formatTaka(amount) {
@@ -185,7 +184,9 @@ export default function DashboardPage() {
       <div className="mx-auto max-w-6xl">
         <ScrollReveal as="header" className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="font-heading text-3xl font-bold text-dark">Welcome, {user.name}</h1>
+            <h1 className="font-heading text-3xl font-bold text-dark">
+              Welcome, <span className="text-primary">{user.name}</span>
+            </h1>
             <p className="capitalize text-light">{user.role} Account</p>
           </div>
           {user.role === "shelter" && (
@@ -200,8 +201,6 @@ export default function DashboardPage() {
             {error}
           </div>
         )}
-
-        {user.role === "shelter" && <DashboardMessages />}
 
         {user.role === "shelter" && (
           <>
