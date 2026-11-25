@@ -279,8 +279,9 @@ export default function ManageHealthSuggestionsPage() {
               Care page immediately.
             </p>
           </div>
-          <button type="button" onClick={openCreateForm} className="btn-hero-adopt shrink-0">
-            <PlusCircle className="h-4 w-4" /> Add New Suggestion
+          <button type="button" onClick={openCreateForm} className="btn-primary shrink-0 gap-3">
+            <PlusCircle className="h-4 w-4" />
+            <span>Add New Suggestion</span>
           </button>
         </div>
 
