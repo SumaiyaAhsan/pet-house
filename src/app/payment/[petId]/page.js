@@ -210,7 +210,7 @@ export default function AdoptionPaymentPage() {
       <div className="mx-auto max-w-6xl">
         <Link
           href={`/pets/${pet._id}`}
-          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-light transition-colors hover:text-primary"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-light transition-colors hover:text-[#b94b00]"
         >
           <ArrowLeft className="h-4 w-4" /> Back to {pet.name}
         </Link>
@@ -261,7 +261,7 @@ export default function AdoptionPaymentPage() {
                       className={`relative flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition-all ${
                         selected
                           ? "border-primary bg-[#fff8f3] ring-2 ring-primary/15"
-                          : "border-[#ebe7df] hover:border-primary/50 hover:bg-secondary/60"
+                          : "border-[#ebe7df] hover:border-[#FF9B55] hover:bg-[#FF9B55] hover:text-black"
                       }`}
                     >
                       <input

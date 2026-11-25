@@ -54,34 +54,33 @@ export async function PATCH(request, { params }) {
           if (order.gateway !== "manual" || order.status !== "pending" || orderStatus !== "pending") {
             throw new OrderActionError("Only pending mobile-banking orders can be verified.", 409);
           }
-          const adoptedPet = await Pet.findOneAndUpdate(
-            { _id: pet._id, status: { $in: ["reserved", "approved"] } },
-            { $set: { status: "adopted" } },
-            { new: true, session }
-          );
-          if (!adoptedPet) {
-            throw new OrderActionError("This pet is no longer reserved for this order.", 409);
-          }
           order.status = "completed";
           order.orderStatus = "confirmed";
           order.confirmedAt = new Date();
         } else if (action === "complete") {
+          let adoptedPet;
           if (
             order.gateway === "cash_on_delivery" &&
             order.status === "pending" &&
-            orderStatus === "confirmed"
+            ["pending", "confirmed"].includes(orderStatus)
           ) {
-            const adoptedPet = await Pet.findOneAndUpdate(
-              { _id: pet._id, status: "reserved" },
+            adoptedPet = await Pet.findOneAndUpdate(
+              { _id: pet._id, status: { $in: ["reserved", "approved"] } },
               { $set: { status: "adopted" } },
               { new: true, session }
             );
-            if (!adoptedPet) {
-              throw new OrderActionError("This pet is no longer reserved for this order.", 409);
-            }
             order.status = "completed";
           } else if (order.status !== "completed" || orderStatus !== "confirmed") {
             throw new OrderActionError("This order cannot be marked complete.", 409);
+          } else {
+            adoptedPet = await Pet.findOneAndUpdate(
+              { _id: pet._id, status: { $in: ["reserved", "approved"] } },
+              { $set: { status: "adopted" } },
+              { new: true, session }
+            );
+          }
+          if (!adoptedPet) {
+            throw new OrderActionError("This pet is no longer available to mark adopted.", 409);
           }
           order.orderStatus = "completed";
           order.completedAt = new Date();

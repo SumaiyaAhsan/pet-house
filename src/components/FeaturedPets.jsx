@@ -108,7 +108,7 @@ export default function FeaturedPets() {
                   <span className="inline-flex items-center gap-1.5">
                     <MapPin className="h-4 w-4 text-primary" /> {pet.location || "Location not listed"}
                   </span>
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-dark transition-colors group-hover:bg-primary">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-dark transition-colors group-hover:bg-[#fff1e6] group-hover:text-[#b94b00]">
                     <ArrowUpRight className="h-4 w-4" />
                   </span>
                 </div>

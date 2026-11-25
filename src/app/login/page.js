@@ -44,7 +44,8 @@ export default function LoginPage() {
       if (data.user.role === "admin") {
         router.push("/admin");
       } else if (data.user.role === "shelter") {
-        router.push("/shelter/add-pet");
+        const next = new URLSearchParams(window.location.search).get("next");
+        router.push(next === "/dashboard" ? next : "/shelter/add-pet");
       } else {
         const next = new URLSearchParams(window.location.search).get("next");
         router.push(/^\/payment\/[a-f\d]{24}$/i.test(next || "") ? next : "/");
@@ -106,7 +107,7 @@ export default function LoginPage() {
           <div>
             <div className="flex justify-between items-center mb-1">
               <label className="block text-sm font-medium text-dark">Password</label>
-              <Link href="/forgot-password" className="text-xs text-primary font-semibold hover:underline">
+              <Link href="/forgot-password" className="text-xs font-semibold text-primary transition-colors hover:text-[#b94b00] hover:underline">
                    Forgot Password?
               </Link>
             </div>
@@ -125,7 +126,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-3.5 text-gray-400 hover:text-primary transition"
+                className="absolute right-3 top-2.5 rounded-full p-1 text-gray-400 transition hover:bg-[#FF9B55] hover:text-black"
               >
                 {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
               </button>
@@ -141,7 +142,7 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-light mt-6">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-primary font-semibold hover:underline">
+          <Link href="/register" className="font-semibold text-primary transition-colors hover:text-[#b94b00] hover:underline">
             Register here
           </Link>
         </p>

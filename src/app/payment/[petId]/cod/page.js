@@ -148,7 +148,7 @@ export default function CashOnDeliveryPage() {
       <div className="mx-auto max-w-6xl">
         <Link
           href={`/payment/${pet._id}`}
-          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-light transition-colors hover:text-primary"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-light transition-colors hover:text-[#b94b00]"
         >
           <ArrowLeft className="h-4 w-4" /> Back to payment methods
         </Link>

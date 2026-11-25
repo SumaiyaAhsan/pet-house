@@ -4,6 +4,7 @@ import connectDB from "@/lib/db";
 import Pet from "@/lib/models/Pet";
 import "@/lib/models/User";
 import { getPublicPetFilter } from "@/lib/public-pets";
+import ChatWithOwnerButton from "@/components/ChatWithOwnerButton";
 
 export default async function AdoptablePetsPage({ searchParams }) {
   const params = await searchParams;
@@ -109,12 +110,12 @@ export default async function AdoptablePetsPage({ searchParams }) {
           <>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {petsWithImages.map((pet) => (
-                <Link
-                  key={pet._id}
-                  href={`/pets/${pet._id}`}
-                  className="card pet-listing-card group flex flex-col"
-                  aria-label={`View ${pet.name}`}
-                >
+                <div key={pet._id} className="relative h-full">
+                  <Link
+                    href={`/pets/${pet._id}`}
+                    className="card pet-listing-card group flex h-full flex-col"
+                    aria-label={`View ${pet.name}`}
+                  >
                   <div className="relative h-64 overflow-hidden bg-[#efe9df]">
                     {pet.image ? (
                       <img
@@ -152,7 +153,14 @@ export default async function AdoptablePetsPage({ searchParams }) {
                       Meet {pet.name} <ArrowUpRight className="h-4 w-4" />
                     </span>
                   </div>
-                </Link>
+                  </Link>
+                  <ChatWithOwnerButton
+                    petId={String(pet._id)}
+                    ownerId={String(pet.listedBy?._id || "")}
+                    ownerName={pet.listedBy?.name || "Owner"}
+                    className="absolute right-4 top-4 z-10"
+                  />
+                </div>
               ))}
             </div>
 

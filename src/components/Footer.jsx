@@ -34,7 +34,7 @@ export default function Footer() {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="inline-flex items-center gap-2 text-sm text-white/80 transition-colors hover:text-primary"
+                  className="inline-flex items-center gap-2 text-sm text-white/80 transition-colors hover:text-[#ffbd8a]"
                 >
                   {link.label} <ArrowUpRight className="h-3.5 w-3.5" />
                 </Link>

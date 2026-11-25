@@ -75,7 +75,7 @@ export default function ContactPage() {
             return (
               <article
                 key={topic.title}
-                className="rounded-2xl border-2 border-orange-100 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:border-orange-200 hover:shadow-lg sm:p-6"
+                className="rounded-2xl border-2 border-orange-100 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:border-[#ffbd8a] hover:bg-[#fffaf5] hover:shadow-lg sm:p-6"
               >
                 <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-[#fff0e8] text-primary">
                   <Icon className="h-5 w-5" aria-hidden="true" />

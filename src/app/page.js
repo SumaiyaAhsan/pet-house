@@ -89,7 +89,7 @@ export default function Home() {
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link href="/pets" className="btn-hero-adopt group w-full sm:w-auto">
               <span>Adopt Now</span>
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary transition-colors group-hover:bg-white">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary transition-colors group-hover:bg-[#fff1e6]">
                 <PawPrint className="h-4 w-4 text-dark" />
               </span>
             </Link>
@@ -117,7 +117,7 @@ export default function Home() {
                   aria-label={`Browse ${category.name} pets`}
                   className="group flex h-full flex-col items-center gap-3 rounded-2xl px-2 py-2 text-center transition-transform hover:-translate-y-1 focus-visible:outline-offset-4"
                 >
-                  <span className="relative block aspect-square w-full max-w-[176px] rounded-full border-[3px] border-orange-200 bg-secondary p-1 transition-colors group-hover:border-orange-300">
+                  <span className="relative block aspect-square w-full max-w-[176px] rounded-full border-[3px] border-orange-200 bg-secondary p-1 transition-all group-hover:border-[#ffbd8a] group-hover:shadow-[0_0_0_6px_#fff1e6]">
                     <span className="relative block h-full w-full overflow-hidden rounded-full">
                       <Image
                         src={category.image}
@@ -147,7 +147,7 @@ export default function Home() {
           {adoptionSteps.map((step) => {
             const Icon = step.icon;
             return (
-              <article key={step.number} className="rounded-[1.75rem] border-2 border-orange-100 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-orange-200 hover:shadow-lg sm:p-7">
+              <article key={step.number} className="rounded-[1.75rem] border-2 border-orange-100 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#ffbd8a] hover:bg-[#fffaf5] hover:shadow-lg sm:p-7">
                 <div className="mb-8 flex items-center justify-between">
                   <span className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-primary">
                     <Icon className="h-6 w-6" />
@@ -185,7 +185,7 @@ export default function Home() {
             {platformFeatures.map((feature) => {
               const Icon = feature.icon;
               return (
-                <article key={feature.title} className="rounded-[1.75rem] border-2 border-orange-100 bg-secondary p-6 transition-all duration-300 hover:-translate-y-1 hover:border-orange-200 hover:shadow-lg sm:p-8">
+                <article key={feature.title} className="rounded-[1.75rem] border-2 border-orange-100 bg-secondary p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#ffbd8a] hover:bg-[#fff1e6] hover:shadow-lg sm:p-8">
                   <span className="mb-8 flex h-12 w-12 items-center justify-center rounded-full bg-white text-primary shadow-sm">
                     <Icon className="h-6 w-6" />
                   </span>
@@ -217,7 +217,7 @@ export default function Home() {
               Browse the pets waiting to meet you, or help a pet find their next home.
             </p>
             <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
-              <Link href="/pets" className="btn-primary bg-dark hover:bg-white hover:text-dark">
+              <Link href="/pets" className="btn-primary bg-dark hover:bg-[#FF9B55] hover:text-black">
                 Browse adoptable pets <ArrowUpRight className="h-4 w-4" />
               </Link>
               <Link href="/shelter/add-pet" className="btn-secondary border-dark/20 bg-white/70">

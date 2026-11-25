@@ -12,7 +12,7 @@ export default function AuthModal({ isOpen, onClose }) {
         {/* Close Button */}
         <button 
           onClick={onClose} 
-          className="absolute top-4 right-4 z-10 bg-white/50 hover:bg-white text-gray-600 p-2 rounded-full transition"
+          className="absolute top-4 right-4 z-10 rounded-full bg-white/50 p-2 text-gray-600 transition hover:bg-[#FF9B55] hover:text-black"
         >
           <X className="w-5 h-5" />
         </button>

@@ -19,11 +19,11 @@ export default function AdminSidebar({ active }) {
   const dashboardClass =
     active === "dashboard"
       ? "bg-white text-dark"
-      : "text-white/70 transition-colors hover:bg-white/10 hover:text-white";
+      : "text-white/70 transition-colors hover:bg-[#FF9B55] hover:text-black";
   const listingsClass =
     active === "listings"
       ? "bg-white text-dark"
-      : "text-white/70 transition-colors hover:bg-white/10 hover:text-white";
+      : "text-white/70 transition-colors hover:bg-[#FF9B55] hover:text-black";
 
   return (
     <aside className="flex flex-col justify-between bg-dark px-4 py-4 text-white sm:px-6 lg:sticky lg:top-0 lg:h-screen lg:px-4 lg:py-7">
@@ -70,7 +70,7 @@ export default function AdminSidebar({ active }) {
         <button
           type="button"
           onClick={handleLogout}
-          className="rounded-full p-2 text-white/65 transition-colors hover:bg-white/10 hover:text-white"
+          className="rounded-full p-2 text-white/65 transition-colors hover:bg-[#FF9B55] hover:text-black"
           aria-label="Log out"
           title="Log out"
         >

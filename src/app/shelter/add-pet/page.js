@@ -96,7 +96,7 @@ export default function AddPetPage() {
       <div className="mx-auto w-full max-w-[790px]">
         <Link
           href="/"
-          className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/75 bg-white/65 px-4 py-2.5 text-sm font-semibold text-light backdrop-blur-md transition-colors hover:border-primary hover:bg-white hover:text-primary"
+          className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/75 bg-white/65 px-4 py-2.5 text-sm font-semibold text-light backdrop-blur-md transition-colors hover:border-[#FF9B55] hover:bg-[#FF9B55] hover:text-black"
         >
           <ArrowLeft className="h-4 w-4" /> Back to home
         </Link>
@@ -138,7 +138,7 @@ export default function AddPetPage() {
                   </span>
                   <span className="text-xs leading-5 text-light">A clear photo helps them find their new family.</span>
                 </div>
-                <label className="relative inline-flex min-h-11 w-full shrink-0 cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full border border-[#e6ddd3] bg-white px-4 py-2 text-xs font-semibold text-dark transition-colors hover:border-primary hover:text-primary sm:w-auto">
+                <label                                                 className="relative inline-flex min-h-11 w-full shrink-0 cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full border border-[#e6ddd3] bg-white px-4 py-2 text-xs font-semibold text-dark transition-colors hover:border-[#FF9B55] hover:bg-[#FF9B55] hover:text-black sm:w-auto">
                   <Upload className="h-4 w-4" />
                   {uploading ? "Uploading..." : formData.image ? "Change photo" : "Upload image"}
                   <input type="file" className="sr-only" accept="image/*" onChange={handleImageUpload} />

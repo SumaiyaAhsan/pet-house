@@ -243,8 +243,8 @@ export default function FAQSection() {
                 }}
                 className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-offset-2 ${
                   activeCategory === category
-                    ? "border-primary bg-primary text-dark"
-                    : "border-orange-100 bg-white text-light hover:border-orange-200 hover:text-dark"
+                    ? "border-[#FF9B55] bg-[#FF9B55] text-black"
+                    : "border-orange-100 bg-white text-light hover:border-[#FF9B55] hover:bg-[#FF9B55] hover:text-black"
                 }`}
               >
                 {category}
@@ -266,7 +266,7 @@ export default function FAQSection() {
                   <article
                     key={item.id}
                     className={`overflow-hidden rounded-2xl border-2 bg-white transition-colors duration-200 ${
-                      isExpanded ? "border-primary" : "border-orange-100 hover:border-orange-200"
+                      isExpanded ? "border-primary" : "border-orange-100 hover:border-[#ffbd8a] hover:bg-[#fffaf5]"
                     }`}
                   >
                     <h3>
@@ -275,7 +275,7 @@ export default function FAQSection() {
                         aria-expanded={isExpanded}
                         aria-controls={answerId}
                         onClick={() => setExpandedQuestion(isExpanded ? "" : item.id)}
-                        className="flex min-h-[4.5rem] w-full items-center gap-4 px-4 py-4 text-left sm:px-6"
+                        className="flex min-h-[4.5rem] w-full items-center gap-4 px-4 py-4 text-left transition-colors hover:bg-[#FF9B55] hover:text-black sm:px-6"
                       >
                         <span
                           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${

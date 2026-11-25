@@ -3,7 +3,10 @@
 
 @theme {
   --color-primary: #f66a2b;
-  --color-primary-hover: #df531a;
+  --color-primary-hover: #FF9B55;
+  --color-hover-tint: #fff1e6;
+  --color-hover-border: #ffbd8a;
+  --color-hover-text: #b94b00;
   --color-secondary: #f7f3eb;
   --color-dark: #111214;
   --color-light: #706f6b;
@@ -122,16 +125,16 @@ h4 {
 .hero-pet-carousel__slide {
   grid-area: 1 / 1;
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
   align-items: center;
-  gap: clamp(3rem, 7vw, 6rem);
+  gap: clamp(1.25rem, 2.5vw, 2rem);
   min-width: 0;
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
   transition:
-    opacity 800ms ease,
-    visibility 0s linear 800ms;
+    opacity 500ms ease,
+    visibility 0s linear 500ms;
 }
 
 .hero-pet-carousel__slide--active {
@@ -169,6 +172,8 @@ h4 {
 
 .hero-pet-carousel__indicators {
   display: flex;
+  width: 52%;
+  margin-left: 48%;
   justify-content: center;
   gap: 0.5rem;
   margin-top: 1rem;
@@ -190,6 +195,10 @@ h4 {
   background: #f66a2b;
 }
 
+.hero-pet-carousel__indicator:hover {
+  background: #FF9B55;
+}
+
 .btn-hero-adopt {
   @apply relative inline-flex items-center justify-center gap-3 overflow-hidden rounded-full px-7 py-3 font-semibold shadow-md transition-colors duration-300;
   background-color: #111214;
@@ -201,7 +210,7 @@ h4 {
   z-index: 0;
   content: "";
   inset: 0;
-  background: #f66a2b;
+  background: #FF9B55;
   transform: translateY(101%);
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -235,7 +244,7 @@ h4 {
   z-index: 0;
   content: "";
   inset: 0;
-  background: #111214;
+  background: #FF9B55;
   transform: translateY(101%);
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -245,8 +254,8 @@ h4 {
 }
 
 .btn-hero-donate:hover {
-  border-color: #111214;
-  color: white;
+  border-color: #ffbd8a;
+  color: #111214;
 }
 
 .btn-hero-donate > * {
@@ -255,15 +264,15 @@ h4 {
 }
 
 .btn-primary {
-  @apply inline-flex items-center justify-center gap-2 rounded-full bg-[#111214] px-7 py-3 font-semibold text-white shadow-sm transition-all duration-300 hover:bg-primary hover:text-[#111214] active:scale-[0.98];
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-[#111214] px-7 py-3 font-semibold text-white shadow-sm transition-all duration-300 hover:bg-[#FF9B55] hover:text-black active:scale-[0.98];
 }
 
 .btn-secondary {
-  @apply inline-flex items-center justify-center gap-2 rounded-full border border-[#d6d3cd] bg-white px-7 py-3 font-semibold text-[#111214] transition-all duration-300 hover:border-[#111214] hover:bg-[#111214] hover:text-white;
+  @apply inline-flex items-center justify-center gap-2 rounded-full border border-[#d6d3cd] bg-white px-7 py-3 font-semibold text-[#111214] transition-all duration-300 hover:border-[#FF9B55] hover:bg-[#FF9B55] hover:text-black;
 }
 
 .card {
-  @apply overflow-hidden rounded-[1.75rem] border border-[#ebe7df] bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl;
+  @apply overflow-hidden rounded-[1.75rem] border border-[#ebe7df] bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-hover-border hover:bg-hover-tint hover:shadow-xl;
 }
 
 .card.pet-listing-card {
@@ -272,7 +281,7 @@ h4 {
 }
 
 .card.pet-listing-card:hover {
-  border-color: #fed7aa;
+  border-color: #ffbd8a;
 }
 
 .input-field {
@@ -302,6 +311,11 @@ h4 {
     border-radius: 1.5rem;
   }
 
+  .hero-pet-carousel__indicators {
+    width: 100%;
+    margin-left: 0;
+  }
+
   .section-wrap {
     width: min(100% - 2rem, 1200px);
   }
@@ -315,6 +329,11 @@ h4 {
 
   .hero-pet-carousel__image {
     aspect-ratio: 1.6;
+  }
+
+  .hero-pet-carousel__indicators {
+    width: 100%;
+    margin-left: 0;
   }
 }
 

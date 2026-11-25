@@ -120,7 +120,7 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-3.5 text-gray-400 hover:text-primary transition"
+                className="absolute right-3 top-2.5 rounded-full p-1 text-gray-400 transition hover:bg-[#FF9B55] hover:text-black"
               >
                 {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
               </button>
@@ -147,7 +147,7 @@ export default function RegisterPage() {
 
         <p className="text-center text-sm text-light mt-6">
           Already have an account?{" "}
-          <Link href="/login" className="text-primary font-semibold hover:underline">
+          <Link href="/login" className="font-semibold text-primary transition-colors hover:text-[#b94b00] hover:underline">
             Login here
           </Link>
         </p>

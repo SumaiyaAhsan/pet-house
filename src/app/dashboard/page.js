@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { PawPrint, PlusCircle, Edit, Clock, MapPin } from "lucide-react";
+import { PawPrint, PlusCircle, Edit, Clock, MapPin, ArrowUpRight, MessageCircle } from "lucide-react";
+import toast from "react-hot-toast";
+import DashboardMessages from "@/components/DashboardMessages";
 
 function formatTaka(amount) {
   return `৳${Number(amount || 0).toLocaleString("en-BD", { maximumFractionDigits: 2 })}`;
@@ -26,15 +28,26 @@ export default function DashboardPage() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      router.push("/login");
+      router.replace("/login?next=%2Fdashboard");
       return;
     }
+
+    const redirectToLogin = (message) => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      toast.error(message);
+      router.replace("/login?next=%2Fdashboard");
+    };
 
     const loadDashboard = async () => {
       try {
         const headers = { Authorization: `Bearer ${token}` };
         const profileResponse = await fetch("/api/user/profile", { headers });
         const userData = await profileResponse.json();
+        if (profileResponse.status === 401) {
+          redirectToLogin(userData.error || "Your session has expired. Please sign in again.");
+          return;
+        }
         if (!profileResponse.ok) throw new Error(userData.error || "Unable to load your profile.");
         setUser(userData);
 
@@ -47,6 +60,12 @@ export default function DashboardPage() {
             petsResponse.json(),
             ordersResponse.json(),
           ]);
+          if (petsResponse.status === 401 || ordersResponse.status === 401) {
+            redirectToLogin(
+              petsData.error || ordersData.error || "Your session has expired. Please sign in again."
+            );
+            return;
+          }
           if (!petsResponse.ok) throw new Error(petsData.error || "Unable to load your pet listings.");
           if (!ordersResponse.ok) throw new Error(ordersData.error || "Unable to load your orders.");
           if (!Array.isArray(petsData) || !Array.isArray(ordersData)) {
@@ -57,6 +76,10 @@ export default function DashboardPage() {
         } else if (userData.role === "user") {
           const response = await fetch("/api/user/adoptions", { headers });
           const adoptionsData = await response.json();
+          if (response.status === 401) {
+            redirectToLogin(adoptionsData.error || "Your session has expired. Please sign in again.");
+            return;
+          }
           if (!response.ok) throw new Error(adoptionsData.error || "Unable to load your order history.");
           if (!Array.isArray(adoptionsData)) throw new Error("Your order history is unavailable.");
           setAdoptions(adoptionsData);
@@ -101,6 +124,8 @@ export default function DashboardPage() {
           </div>
         )}
 
+        <DashboardMessages />
+
         {user.role === "shelter" && (
           <>
             <section className="mb-10">
@@ -108,34 +133,96 @@ export default function DashboardPage() {
               {pets.length === 0 ? (
                 <p className="rounded-2xl bg-white p-6 text-light">You haven&apos;t listed any pets yet.</p>
               ) : (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="space-y-5">
                   {pets.map((pet) => (
-                    <article key={pet._id} className="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-sm">
-                      {pet.image ? (
-                        <span className="relative block h-20 w-20 shrink-0 overflow-hidden rounded-xl">
-                          <Image src={pet.image} alt={pet.name} fill sizes="80px" unoptimized className="object-cover" />
-                        </span>
-                      ) : (
-                        <span className="flex h-20 w-20 items-center justify-center rounded-xl bg-secondary text-primary">
-                          <PawPrint />
-                        </span>
-                      )}
-                      <div className="min-w-0 flex-grow">
-                        <h3 className="truncate text-lg font-bold text-dark">{pet.name}</h3>
-                        <span className={`rounded-md px-2 py-1 text-xs font-bold ${
-                          pet.status === "approved" ? "bg-green-100 text-green-700" :
-                          pet.status === "pending" ? "bg-yellow-100 text-yellow-700" :
-                          pet.status === "reserved" ? "bg-orange-100 text-orange-700" :
-                          pet.status === "adopted" ? "bg-indigo-100 text-indigo-700" :
-                          "bg-red-100 text-red-700"
-                        }`}>
-                          {pet.status.toUpperCase()}
-                        </span>
-                        {!["reserved", "adopted"].includes(pet.status) && (
-                          <Link href={`/shelter/edit-pet/${pet._id}`} className="mt-2 flex items-center gap-1 text-sm font-bold text-primary hover:underline">
-                            <Edit className="h-4 w-4" /> Edit Details
-                          </Link>
+                    <article key={pet._id} className="card grid gap-4 p-3 lg:grid-cols-[minmax(230px,0.85fr)_minmax(300px,1.35fr)_minmax(250px,0.9fr)]">
+                      <div className="flex flex-col rounded-[1.35rem] bg-[#f7f6f4] p-5 sm:p-6">
+                        <p className="section-kicker mb-3">{pet.species} companion</p>
+                        <h3 className="font-heading text-2xl font-bold text-dark">{pet.name}</h3>
+                        <p className="mt-2 text-sm font-medium capitalize text-light">
+                          {pet.species} <span className="mx-1">·</span> {pet.breed || "Mixed breed"}
+                        </p>
+                        <div className="mt-6">
+                          <h4 className="font-heading text-base font-bold text-dark">About {pet.name}</h4>
+                          <p className="mt-2 line-clamp-5 text-sm leading-6 text-light">
+                            {pet.description || `Meet ${pet.name}, a lovely ${pet.species?.toLowerCase()} looking for a caring home.`}
+                          </p>
+                        </div>
+                        <div className="mt-auto space-y-3 border-t border-[#e8e4de] pt-5">
+                          <p className="flex items-start gap-2 text-sm text-light">
+                            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                            <span>{pet.location || "Location not provided"}</span>
+                          </p>
+                          <p className="text-xs text-light">
+                            Listed {new Date(pet.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="relative min-h-[280px] overflow-hidden rounded-[1.35rem] bg-[#f0ede7] lg:min-h-[320px]">
+                        {pet.image ? (
+                          <Image
+                            src={pet.image}
+                            alt={pet.name}
+                            fill
+                            sizes="(max-width: 1024px) 100vw, 45vw"
+                            unoptimized
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full min-h-[280px] items-center justify-center text-primary">
+                            <PawPrint className="h-16 w-16" />
+                          </div>
                         )}
+                        <span className={`absolute right-4 top-4 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide ${
+                          pet.status === "approved" ? "bg-emerald-100 text-emerald-800" :
+                          pet.status === "pending" ? "bg-amber-100 text-amber-800" :
+                          pet.status === "reserved" ? "bg-orange-100 text-orange-800" :
+                          pet.status === "adopted" ? "bg-indigo-100 text-indigo-800" :
+                          "bg-red-100 text-red-800"
+                        }`}>
+                          {pet.status}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-col rounded-[1.35rem] bg-[#f7f6f4] p-5 sm:p-6">
+                        <p className="text-sm font-semibold text-light">Adoption fee</p>
+                        <p className="mt-1 font-heading text-3xl font-bold tracking-[-0.06em] text-dark">
+                          {formatTaka(pet.price)}
+                        </p>
+                        <div className="mt-5 rounded-2xl bg-white p-4">
+                          <h4 className="mb-4 font-heading text-sm font-bold text-dark">Pet details</h4>
+                          <dl className="grid grid-cols-2 gap-x-3 gap-y-4 text-sm">
+                            <div>
+                              <dt className="text-xs text-light">Age</dt>
+                              <dd className="mt-1 font-semibold text-dark">{pet.age} {Number(pet.age) === 1 ? "year" : "years"}</dd>
+                            </div>
+                            <div>
+                              <dt className="text-xs text-light">Gender</dt>
+                              <dd className="mt-1 font-semibold text-dark">{pet.gender || "—"}</dd>
+                            </div>
+                            <div>
+                              <dt className="text-xs text-light">Breed</dt>
+                              <dd className="mt-1 truncate font-semibold text-dark">{pet.breed || "Mixed"}</dd>
+                            </div>
+                            <div>
+                              <dt className="text-xs text-light">Status</dt>
+                              <dd className="mt-1 capitalize font-semibold text-dark">{pet.status}</dd>
+                            </div>
+                          </dl>
+                        </div>
+                        <div className="mt-auto flex flex-col gap-2 pt-5">
+                          {pet.status === "approved" && (
+                            <Link href={`/pets/${pet._id}`} className="btn-secondary flex w-full items-center justify-center gap-2 px-3 py-3 text-sm">
+                              <ArrowUpRight className="h-4 w-4" /> View listing
+                            </Link>
+                          )}
+                          {!["reserved", "adopted"].includes(pet.status) && (
+                            <Link href={`/shelter/edit-pet/${pet._id}`} className="btn-primary flex w-full items-center justify-center gap-2 px-3 py-3 text-sm">
+                              <Edit className="h-4 w-4" /> Edit
+                            </Link>
+                          )}
+                        </div>
                       </div>
                     </article>
                   ))}
@@ -177,6 +264,19 @@ export default function DashboardPage() {
                           </p>
                         </div>
                       )}
+                      {order.buyer?._id && order.pet?._id && (
+                        <div className="mt-4 border-t border-[#eee9e1] pt-4">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              router.push(`/messages?pet=${order.pet._id}&to=${order.buyer._id}`)
+                            }
+                            className="btn-secondary inline-flex items-center gap-2 px-4 py-2 text-sm"
+                          >
+                            <MessageCircle className="h-4 w-4" /> Message Adopter
+                          </button>
+                        </div>
+                      )}
                     </article>
                   ))}
                 </div>
@@ -192,7 +292,7 @@ export default function DashboardPage() {
                 <h2 className="mb-4 font-heading text-2xl font-bold text-dark">Pending Orders</h2>
                 <div className="grid gap-4 md:grid-cols-2">
                   {pendingOrders.map((order) => (
-                    <article key={order._id} className="flex items-center gap-4 rounded-2xl border-2 border-orange-100 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-orange-200 hover:shadow-md">
+                    <article key={order._id} className="flex items-center gap-4 rounded-2xl border-2 border-orange-100 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#ffbd8a] hover:bg-[#fffaf5] hover:shadow-md">
                       {order.pet?.image ? (
                         <span className="relative block h-20 w-20 shrink-0 overflow-hidden rounded-xl">
                           <Image src={order.pet.image} alt={order.pet.name || order.petName} fill sizes="80px" unoptimized className="object-cover" />
@@ -206,7 +306,7 @@ export default function DashboardPage() {
                         <h3 className="truncate font-bold text-dark">{order.pet?.name || order.petName || "Pet"}</h3>
                         <p className="text-xs capitalize text-light">{order.paymentMethod?.replaceAll("_", " ")}</p>
                         <p className="mt-1 text-sm font-semibold text-dark">Payment: {order.status}</p>
-                        <Link href={`/payment/confirmation/${order._id}`} className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline">
+                        <Link href={`/payment/confirmation/${order._id}`} className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-primary transition-colors hover:text-[#b94b00] hover:underline">
                           View Order <Clock className="h-4 w-4" />
                         </Link>
                       </div>
@@ -240,7 +340,7 @@ export default function DashboardPage() {
                     const pet = order.pet;
                     const petName = pet?.name || order.petName || "Pet";
                     return (
-                      <article key={order._id} className="overflow-hidden rounded-2xl border-2 border-orange-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-orange-200 hover:shadow-lg">
+                      <article key={order._id} className="overflow-hidden rounded-2xl border-2 border-orange-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#ffbd8a] hover:bg-[#fffaf5] hover:shadow-lg">
                         {pet?.image ? (
                           <div className="relative h-52 w-full">
                             <Image src={pet.image} alt={petName} fill sizes="(max-width: 768px) 100vw, 33vw" unoptimized className="object-cover" />
@@ -274,7 +374,7 @@ export default function DashboardPage() {
 
                           <div className="mt-4 flex items-center justify-between border-t border-[#eee9e1] pt-4">
                             <span className="font-bold text-dark">Adoption price {formatTaka(order.adoptionFee ?? pet?.price)}</span>
-                            <Link href={`/payment/confirmation/${order._id}`} className="text-sm font-bold text-primary hover:underline">
+                            <Link href={`/payment/confirmation/${order._id}`} className="text-sm font-bold text-primary transition-colors hover:text-[#b94b00] hover:underline">
                               View Details
                             </Link>
                           </div>

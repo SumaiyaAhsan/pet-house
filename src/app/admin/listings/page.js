@@ -17,7 +17,7 @@ function ListingGroup({ title, description, pets, status }) {
   const StatusIcon = isAdopted ? Heart : isReserved ? Clock3 : CheckCircle;
 
   return (
-    <section className="min-h-[420px] rounded-[2rem] border border-[#ebe7df] bg-white p-5 shadow-sm sm:p-7">
+    <section className="min-h-[420px] rounded-[2rem] border-2 border-[#ffb66e] bg-gradient-to-br from-white to-[#fffaf5] p-5 shadow-[0_0_0_4px_#fff7ed,0_8px_24px_rgba(251,146,60,0.22),0_0_18px_rgba(251,146,60,0.42)] sm:p-7">
       <header className="mb-6 flex items-start justify-between gap-4">
         <div>
           <h2 className="font-heading text-2xl font-bold text-dark">{title}</h2>
@@ -42,7 +42,7 @@ function ListingGroup({ title, description, pets, status }) {
           {pets.map((pet) => (
             <li
               key={pet._id}
-              className="flex min-w-0 items-center gap-4 rounded-2xl border border-[#ebe7df] bg-secondary/60 p-4 sm:p-5"
+              className="flex min-w-0 items-center gap-4 rounded-2xl border-2 border-[#ffb66e] bg-gradient-to-br from-white to-[#fff8ef] p-4 shadow-[0_0_0_3px_#fff7ed,0_6px_18px_rgba(251,146,60,0.18),0_0_12px_rgba(251,146,60,0.32)] sm:p-5"
             >
               <span className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl font-heading text-2xl font-bold ${accent}`}>
                 {pet.name?.charAt(0)?.toUpperCase() || <PawPrint className="h-6 w-6" />}
@@ -137,7 +137,7 @@ export default function AdminListingsPage() {
               ))}
             </div>
           ) : error ? (
-            <section className="rounded-3xl border border-[#ebe7df] bg-white p-8 text-center">
+            <section className="rounded-3xl border-2 border-[#ffb66e] bg-gradient-to-br from-white to-[#fff8ef] p-8 text-center shadow-[0_0_0_4px_#fff7ed,0_8px_24px_rgba(251,146,60,0.22),0_0_18px_rgba(251,146,60,0.42)]">
               <PawPrint className="mx-auto mb-3 h-9 w-9 text-primary" />
               <h2 className="font-heading text-xl font-bold text-dark">Listings unavailable</h2>
               <p className="mt-2 text-sm text-light">{error}</p>

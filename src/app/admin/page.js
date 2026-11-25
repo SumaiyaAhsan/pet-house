@@ -136,7 +136,7 @@ export default function AdminDashboard() {
         action === "confirm"
           ? "Payment verified and order confirmed."
           : action === "complete"
-            ? "Order marked complete."
+            ? "Order Successfully Completed!"
             : "Order cancelled and pet released."
       );
       setLoading(true);
@@ -182,7 +182,7 @@ export default function AdminDashboard() {
               </div>
             </div>
           ) : error ? (
-            <section className="rounded-3xl border border-[#ebe7df] bg-white p-8 text-center">
+            <section className="rounded-3xl border-2 border-[#ffb66e] bg-gradient-to-br from-white to-[#fff8ef] p-8 text-center shadow-[0_0_0_4px_#fff7ed,0_8px_24px_rgba(251,146,60,0.22),0_0_18px_rgba(251,146,60,0.42)]">
               <PawPrint className="mx-auto mb-3 h-9 w-9 text-primary" />
               <h2 className="font-heading text-xl font-bold text-dark">Dashboard unavailable</h2>
               <p className="mt-2 text-sm text-light">{error}</p>
@@ -221,7 +221,7 @@ export default function AdminDashboard() {
                       type="button"
                       onClick={() => handleAction(pendingPet._id, "approved")}
                       disabled={activePetId === pendingPet._id}
-                      className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-dark transition-colors hover:bg-primary-hover disabled:opacity-60"
+                      className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-dark transition-colors hover:bg-[#FF9B55] hover:text-black disabled:opacity-60"
                     >
                       <Check className="h-4 w-4" />
                       Approve
@@ -230,7 +230,7 @@ export default function AdminDashboard() {
                       type="button"
                       onClick={() => handleAction(pendingPet._id, "rejected")}
                       disabled={activePetId === pendingPet._id}
-                      className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10 disabled:opacity-60"
+                      className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#FF9B55] hover:text-black disabled:opacity-60"
                     >
                       <X className="h-4 w-4" />
                       Reject
@@ -268,7 +268,7 @@ export default function AdminDashboard() {
                     color: "text-dark",
                   },
                 ].map((stat) => (
-                  <article key={stat.label} className="rounded-2xl border border-[#ebe7df] bg-white px-5 py-4">
+                  <article key={stat.label} className="rounded-2xl border-2 border-[#ffb66e] bg-gradient-to-br from-white to-[#fff8ef] px-5 py-4 shadow-[0_0_0_3px_#fff7ed,0_6px_18px_rgba(251,146,60,0.18),0_0_12px_rgba(251,146,60,0.32)]">
                     <p className="text-xs font-medium text-light">{stat.label}</p>
                     <p className={`mt-1 font-heading text-3xl font-bold ${stat.color}`}>{stat.value}</p>
                   </article>
@@ -276,7 +276,7 @@ export default function AdminDashboard() {
               </section>
 
               <div className="mb-8 grid gap-5">
-                <section className="overflow-hidden rounded-3xl border border-[#ebe7df] bg-white">
+                <section className="overflow-hidden rounded-3xl border-2 border-[#ffb66e] bg-gradient-to-br from-white to-[#fffaf5] shadow-[0_0_0_4px_#fff7ed,0_8px_24px_rgba(251,146,60,0.22),0_0_18px_rgba(251,146,60,0.42)]">
                   <div className="flex flex-wrap items-end justify-between gap-3 px-5 py-5 sm:px-6">
                     <div>
                       <h2 className="font-heading text-xl font-bold text-dark">Recent orders</h2>
@@ -310,12 +310,8 @@ export default function AdminDashboard() {
                           const canComplete =
                             (order.gateway === "cash_on_delivery" &&
                               order.status === "pending" &&
-                              order.orderStatus === "confirmed") ||
+                              ["pending", "confirmed"].includes(order.orderStatus)) ||
                             (order.status === "completed" && order.orderStatus === "confirmed");
-                          const canCancel =
-                            ["manual", "cash_on_delivery"].includes(order.gateway) &&
-                            order.status === "pending";
-
                           return (
                             <tr key={order._id}>
                               <td className="whitespace-nowrap px-5 py-3 font-mono text-xs text-light">
@@ -350,7 +346,7 @@ export default function AdminDashboard() {
                                       type="button"
                                       onClick={() => handleOrderAction(order._id, "confirm")}
                                       disabled={activeOrderId === order._id}
-                                      className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 disabled:opacity-50"
+                                      className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 transition-colors hover:bg-[#FF9B55] hover:text-black disabled:opacity-50"
                                     >
                                       Verify payment
                                     </button>
@@ -360,19 +356,9 @@ export default function AdminDashboard() {
                                       type="button"
                                       onClick={() => handleOrderAction(order._id, "complete")}
                                       disabled={activeOrderId === order._id}
-                                      className="rounded-lg bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 disabled:opacity-50"
+                                      className="rounded-lg bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 transition-colors hover:bg-[#FF9B55] hover:text-black disabled:opacity-50"
                                     >
-                                      {order.gateway === "cash_on_delivery" ? "Mark delivered" : "Complete order"}
-                                    </button>
-                                  )}
-                                  {canCancel && (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleOrderAction(order._id, "cancel")}
-                                      disabled={activeOrderId === order._id}
-                                      className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 disabled:opacity-50"
-                                    >
-                                      Cancel
+                                      Order Done
                                     </button>
                                   )}
                                 </div>
@@ -389,7 +375,7 @@ export default function AdminDashboard() {
                 </section>
 
                 <div className="grid gap-5 xl:grid-cols-2">
-                  <section className="overflow-hidden rounded-3xl border border-[#ebe7df] bg-white">
+                  <section className="overflow-hidden rounded-3xl border-2 border-[#ffb66e] bg-gradient-to-br from-white to-[#fffaf5] shadow-[0_0_0_4px_#fff7ed,0_8px_24px_rgba(251,146,60,0.22),0_0_18px_rgba(251,146,60,0.42)]">
                     <div className="px-5 py-5 sm:px-6">
                       <h2 className="font-heading text-xl font-bold text-dark">Recently added pets</h2>
                     </div>
@@ -424,7 +410,7 @@ export default function AdminDashboard() {
                     </div>
                   </section>
 
-                  <section className="overflow-hidden rounded-3xl border border-[#ebe7df] bg-white">
+                  <section className="overflow-hidden rounded-3xl border-2 border-[#ffb66e] bg-gradient-to-br from-white to-[#fffaf5] shadow-[0_0_0_4px_#fff7ed,0_8px_24px_rgba(251,146,60,0.22),0_0_18px_rgba(251,146,60,0.42)]">
                     <div className="px-5 py-5 sm:px-6">
                       <h2 className="font-heading text-xl font-bold text-dark">Recently registered users</h2>
                     </div>
@@ -469,7 +455,7 @@ export default function AdminDashboard() {
                   { label: "Reserved", value: reservedCount, color: "text-orange-700" },
                   { label: "Adopted", value: adoptedCount, color: "text-indigo-700" },
                 ].map((stat) => (
-                  <article key={stat.label} className="rounded-2xl border border-[#ebe7df] bg-white px-5 py-4">
+                  <article key={stat.label} className="rounded-2xl border-2 border-[#ffb66e] bg-gradient-to-br from-white to-[#fff8ef] px-5 py-4 shadow-[0_0_0_3px_#fff7ed,0_6px_18px_rgba(251,146,60,0.18),0_0_12px_rgba(251,146,60,0.32)]">
                     <p className="text-xs font-medium text-light">{stat.label}</p>
                     <p className={`mt-1 font-heading text-3xl font-bold ${stat.color}`}>{stat.value}</p>
                   </article>
@@ -485,7 +471,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {pets.length === 0 ? (
-                  <div className="rounded-2xl border border-[#ebe7df] bg-white px-6 py-12 text-center">
+                  <div className="rounded-2xl border-2 border-[#ffb66e] bg-gradient-to-br from-white to-[#fff8ef] px-6 py-12 text-center shadow-[0_0_0_3px_#fff7ed,0_6px_18px_rgba(251,146,60,0.18),0_0_12px_rgba(251,146,60,0.32)]">
                     <PawPrint className="mx-auto mb-3 h-9 w-9 text-primary" />
                     <p className="font-semibold text-dark">No pet listings yet</p>
                     <p className="mt-1 text-sm text-light">New submissions will appear here for review.</p>
@@ -495,7 +481,7 @@ export default function AdminDashboard() {
                     {pets.map((pet) => (
                       <article
                         key={pet._id}
-                        className="flex min-w-0 items-center gap-3 rounded-2xl border border-[#ebe7df] bg-white p-4"
+                        className="flex min-w-0 items-center gap-3 rounded-2xl border-2 border-[#ffb66e] bg-gradient-to-br from-white to-[#fff8ef] p-4 shadow-[0_0_0_3px_#fff7ed,0_6px_18px_rgba(251,146,60,0.18),0_0_12px_rgba(251,146,60,0.32)]"
                       >
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary font-heading text-lg font-bold text-primary">
                           {pet.name?.charAt(0)?.toUpperCase() || <PawPrint className="h-5 w-5" />}
@@ -512,7 +498,7 @@ export default function AdminDashboard() {
                               type="button"
                               onClick={() => handleAction(pet._id, "approved")}
                               disabled={activePetId === pet._id}
-                              className="rounded-lg bg-emerald-50 p-2 text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-50"
+                              className="rounded-lg bg-emerald-50 p-2 text-emerald-700 transition-colors hover:bg-[#FF9B55] hover:text-black disabled:opacity-50"
                               aria-label={`Approve ${pet.name}`}
                               title="Approve"
                             >
@@ -522,7 +508,7 @@ export default function AdminDashboard() {
                               type="button"
                               onClick={() => handleAction(pet._id, "rejected")}
                               disabled={activePetId === pet._id}
-                              className="rounded-lg bg-red-50 p-2 text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
+                              className="rounded-lg bg-red-50 p-2 text-red-700 transition-colors hover:bg-[#FF9B55] hover:text-black disabled:opacity-50"
                               aria-label={`Reject ${pet.name}`}
                               title="Reject"
                             >

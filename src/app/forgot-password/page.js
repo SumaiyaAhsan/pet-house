@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
     <div className="min-h-[80vh] flex items-center justify-center bg-secondary px-4 sm:px-6 py-12">
       <div className="card w-full max-w-md p-6 sm:p-8 bg-white relative">
         
-        <Link href="/login" className="absolute top-6 left-6 text-light hover:text-primary">
+        <Link href="/login" className="absolute top-6 left-6 text-light transition-colors hover:text-[#b94b00]">
           <ArrowLeft className="w-5 h-5" />
         </Link>
 
@@ -87,7 +87,7 @@ export default function ForgotPasswordPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-3.5 text-gray-400 hover:text-primary transition"
+                className="absolute right-3 top-2.5 rounded-full p-1 text-gray-400 transition hover:bg-[#FF9B55] hover:text-black"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>

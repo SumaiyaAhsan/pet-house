@@ -46,7 +46,7 @@ export default function HeroPetCarousel() {
 
     const timeoutId = window.setTimeout(() => {
       setActiveIndex((currentIndex) => (currentIndex + 1) % petSlides.length);
-    }, 5000);
+    }, 3000);
 
     return () => window.clearTimeout(timeoutId);
   }, [activeIndex]);

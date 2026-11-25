@@ -69,7 +69,7 @@ export default function EditPetPage() {
   return (
     <div className="min-h-screen bg-secondary py-12 px-4 sm:px-6">
       <div className="max-w-3xl mx-auto">
-        <Link href="/dashboard" className="flex items-center gap-2 text-light hover:text-primary mb-6">
+        <Link href="/dashboard" className="mb-6 flex items-center gap-2 text-light transition-colors hover:text-[#b94b00]">
           <ArrowLeft className="w-4 h-4" /> Back to Dashboard
         </Link>
 
@@ -115,6 +115,43 @@ export default function EditPetPage() {
                   <option value="Hamster">🐹 Hamster</option>
                   <option value="Turtle">🐢 Turtle</option>
                   <option value="Other">🐾 Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-dark mb-1">Breed</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  value={formData.breed || ""}
+                  onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-dark mb-1">Age (Years)</label>
+                <input
+                  type="number"
+                  required
+                  min="0"
+                  step="0.5"
+                  className="input-field"
+                  value={formData.age ?? ""}
+                  onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-dark mb-1">Gender</label>
+                <select
+                  required
+                  className="input-field"
+                  value={formData.gender || ""}
+                  onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                >
+                  <option value="">Select gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
                 </select>
               </div>
 

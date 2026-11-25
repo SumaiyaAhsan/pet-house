@@ -11,21 +11,19 @@ import {
   ShieldCheck,
   HeartPulse,
   PawPrint,
+  Edit,
 } from "lucide-react";
-import ChatModal from "@/components/ChatModal";
 
 export default function PetDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
-  
+
   const [pet, setPet] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeImage, setActiveImage] = useState(null);
   const [currentUser] = useState(() =>
     typeof window === "undefined" ? null : JSON.parse(localStorage.getItem("user") || "null")
   );
-  const [chatTarget, setChatTarget] = useState("Shelter"); // Default to Shelter
 
   useEffect(() => {
     if (!id) return;
@@ -47,15 +45,26 @@ export default function PetDetailsPage() {
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error("Please login to continue");
-      router.push(`/login?next=${encodeURIComponent(`/payment/${pet._id}`)}`);
+      const nextPath =
+        action === "Payment"
+          ? `/payment/${pet._id}`
+          : action === "Chat"
+            ? `/messages?pet=${pet._id}${target === "Shelter" && pet.listedBy?._id ? `&to=${pet.listedBy._id}` : ""}`
+            : `/pets/${pet._id}`;
+      router.push(`/login?next=${encodeURIComponent(nextPath)}`);
       return;
     }
 
     if (action === "Payment") {
       router.push(`/payment/${pet._id}`);
     } else if (action === "Chat") {
-      setChatTarget(target);
-      setIsChatOpen(true);
+      // "Shelter" targets the pet's owner directly; "Adopter" opens the inbox
+      // focused on this pet's conversations.
+      if (target === "Shelter" && pet.listedBy?._id) {
+        router.push(`/messages?pet=${pet._id}&to=${pet.listedBy._id}`);
+      } else {
+        router.push(`/messages?pet=${pet._id}`);
+      }
     }
   };
 
@@ -72,13 +81,16 @@ export default function PetDetailsPage() {
     pet.vetApproved && "Vet approved",
   ].filter(Boolean);
   const isAdopter = currentUser?.role === "user";
+  const isPetOwner =
+    currentUser?.role === "shelter" &&
+    String(currentUser.id || currentUser._id) === String(pet.listedBy?._id);
 
   return (
     <main className="min-h-screen bg-secondary px-4 py-8 sm:px-6 sm:py-12">
       <div className="mx-auto max-w-[1400px]">
         <Link
           href="/pets"
-          className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#e1dccf] bg-white px-4 py-2.5 text-sm font-semibold text-light shadow-sm transition-colors hover:border-primary hover:text-primary"
+          className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#e1dccf] bg-white px-4 py-2.5 text-sm font-semibold text-light shadow-sm transition-colors hover:border-[#FF9B55] hover:bg-[#FF9B55] hover:text-black"
         >
           <ArrowLeft className="h-4 w-4" /> Back to adoptable pets
         </Link>
@@ -178,7 +190,7 @@ export default function PetDetailsPage() {
                     aria-label={`Show photo ${index + 1}`}
                     aria-pressed={shownImage === image}
                     className={`h-16 w-16 overflow-hidden rounded-xl border-2 bg-white transition sm:h-20 sm:w-20 ${
-                      shownImage === image ? "border-dark shadow-sm" : "border-white hover:border-primary"
+                      shownImage === image ? "border-dark shadow-sm" : "border-white hover:border-[#FF9B55] hover:bg-[#FF9B55]"
                     }`}
                   >
                     <img src={image} alt="" className="h-full w-full object-cover" />
@@ -248,20 +260,30 @@ export default function PetDetailsPage() {
                     </button>
                   </>
                 ) : currentUser?.role === "shelter" ? (
-                  <button
-                    onClick={() => handleAction("Chat", "Adopter")}
-                    className="btn-secondary flex w-full items-center justify-center gap-2 py-3.5"
-                  >
-                    <MessageCircle className="h-5 w-5" /> Message Adopter
-                  </button>
+                  <div className={`grid gap-2 ${isPetOwner ? "grid-cols-[minmax(0,1fr)_auto]" : "grid-cols-1"}`}>
+                    <button
+                      onClick={() => handleAction("Chat", "Adopter")}
+                      className={`btn-secondary flex w-full items-center justify-center gap-2 py-3.5 ${isPetOwner ? "px-2 text-xs sm:text-sm" : ""}`}
+                    >
+                      <MessageCircle className="h-5 w-5 shrink-0" /> Message Adopter
+                    </button>
+                    {isPetOwner && !["reserved", "adopted"].includes(pet.status) && (
+                      <Link
+                        href={`/shelter/edit-pet/${pet._id}`}
+                        className="btn-primary flex items-center justify-center gap-2 px-3 py-3.5 text-sm"
+                      >
+                        <Edit className="h-4 w-4" /> Edit
+                      </Link>
+                    )}
+                  </div>
                 ) : (
                   <>
                     <button
                       onClick={() => handleAction("Payment")}
-                      className="group flex w-full items-center justify-center gap-3 rounded-full bg-dark px-5 py-3.5 font-semibold text-white shadow-sm transition hover:bg-primary hover:text-dark"
+                      className="group flex w-full items-center justify-center gap-3 rounded-full bg-dark px-5 py-3.5 font-semibold text-white shadow-sm transition hover:bg-[#FF9B55] hover:text-black"
                     >
                       Adopt This Pet
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-dark transition group-hover:bg-white">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-dark transition group-hover:bg-[#fff1e6]">
                         <PawPrint className="h-4 w-4" />
                       </span>
                     </button>
@@ -269,7 +291,7 @@ export default function PetDetailsPage() {
                       onClick={() => handleAction("Chat", "Shelter")}
                       className="btn-secondary flex w-full items-center justify-center gap-2 py-3"
                     >
-                      <MessageCircle className="h-5 w-5" /> Message Shelter
+                      <MessageCircle className="h-5 w-5" /> Chat with Owner
                     </button>
                   </>
                 )}
@@ -278,15 +300,6 @@ export default function PetDetailsPage() {
           </section>
         </div>
       </div>
-
-      <ChatModal
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-        petId={pet._id}
-        shelterId={pet.listedBy?._id}
-        shelterName={chatTarget === "Adopter" ? "Adopter" : (pet.listedBy?.name || "Shelter")}
-        currentUser={currentUser}
-      />
     </main>
   );
 }

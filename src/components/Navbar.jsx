@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { PawPrint, Menu, X, LogOut, ArrowUpRight } from "lucide-react";
-import { useState, useSyncExternalStore } from "react";
+import { PawPrint, Menu, X, LogOut, ArrowUpRight, MessageCircle, HeartPulse } from "lucide-react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import toast from "react-hot-toast";
 
@@ -48,9 +48,46 @@ const AVATAR_COLORS = [
 
 function NavbarContent({ pathname }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const router = useRouter();
   const storedUser = useSyncExternalStore(subscribeToUser, getStoredUser, getServerUser);
   const user = storedUser ? JSON.parse(storedUser) : null;
+
+  // WhatsApp-style unread badge: poll the unread count while signed in.
+  useEffect(() => {
+    if (!user) {
+      setUnreadMessages(0);
+      return;
+    }
+    let cancelled = false;
+    const loadUnread = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        const res = await fetch("/api/messages/unread-count", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled) setUnreadMessages(Number(data.unread) || 0);
+      } catch {
+        // badge stays as-is if the count cannot load
+      }
+    };
+    loadUnread();
+    const interval = setInterval(loadUnread, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [storedUser, user]);
+
+  const unreadBadge =
+    unreadMessages > 0 ? (
+      <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-bold text-white">
+        {unreadMessages > 99 ? "99+" : unreadMessages}
+      </span>
+    ) : null;
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -89,7 +126,7 @@ function NavbarContent({ pathname }) {
               <Link
                 key={link.name}
                 href={link.href}
-                className="whitespace-nowrap text-sm font-semibold text-dark transition-colors duration-200 hover:text-primary"
+                className="whitespace-nowrap rounded-full px-3 py-2 text-sm font-semibold text-dark transition-colors duration-200 hover:bg-[#FF9B55] hover:text-black"
               >
                 {link.name}
               </Link>
@@ -100,8 +137,17 @@ function NavbarContent({ pathname }) {
             {user ? (
               <>
                 <Link
+                  href="/messages"
+                  className="relative rounded-full p-2 text-dark transition-colors hover:bg-[#FF9B55] hover:text-black"
+                  aria-label={unreadMessages > 0 ? `Messages, ${unreadMessages} unread` : "Messages"}
+                  title="Messages"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                  {unreadBadge}
+                </Link>
+                <Link
                   href={accountLink}
-                  className="flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold text-dark transition-colors hover:bg-secondary"
+                  className="flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold text-dark transition-colors hover:bg-[#FF9B55] hover:text-black"
                 >
                   <span
                     className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white ${getAvatarColor(user.name)}`}
@@ -113,7 +159,7 @@ function NavbarContent({ pathname }) {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="rounded-full p-2 text-light transition-colors hover:bg-red-50 hover:text-red-600"
+                  className="rounded-full p-2 text-light transition-colors hover:bg-[#FF9B55] hover:text-black"
                   aria-label="Log out"
                   title="Log out"
                 >
@@ -124,30 +170,30 @@ function NavbarContent({ pathname }) {
               <>
                 <Link
                   href="/login"
-                  className="rounded-full px-4 py-2 text-sm font-semibold text-dark transition-colors hover:text-primary"
+                  className="rounded-full px-4 py-2 text-sm font-semibold text-dark transition-colors hover:bg-[#FF9B55] hover:text-black"
                 >
                   Login
                 </Link>
                 <Link href="/register" className="btn-hero-adopt btn-register group">
                   <span className="text-sm font-semibold">Register</span>
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary transition-colors group-hover:bg-white">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary transition-colors group-hover:bg-[#fff1e6]">
                     <PawPrint className="h-5 w-5 text-dark" />
                   </span>
                 </Link>
               </>
             )}
             <Link
-              href="/pets"
-              className="ml-1 inline-flex items-center gap-2 rounded-full bg-[#111214] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary hover:text-dark"
+              href="/pet-care"
+              className="ml-1 inline-flex items-center gap-2 rounded-full bg-[#111214] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#FF9B55] hover:text-black"
             >
-              Adopt Now <ArrowUpRight className="h-4 w-4" />
+              Pet Care <HeartPulse className="h-4 w-4" />
             </Link>
           </div>
 
           <button
             type="button"
             onClick={() => setIsOpen((open) => !open)}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-white transition-transform hover:scale-105 xl:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-white transition-all hover:scale-105 hover:bg-[#FF9B55] hover:text-black xl:hidden"
             aria-label={isOpen ? "Close menu" : "Open menu"}
             aria-expanded={isOpen}
           >
@@ -163,7 +209,7 @@ function NavbarContent({ pathname }) {
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
-                  className="rounded-2xl px-4 py-3 text-sm font-semibold text-dark transition-colors hover:bg-secondary hover:text-primary"
+                  className="rounded-2xl px-4 py-3 text-sm font-semibold text-dark transition-colors hover:bg-[#FF9B55] hover:text-black"
                 >
                   {link.name}
                 </Link>
@@ -172,6 +218,18 @@ function NavbarContent({ pathname }) {
             <div className="mt-3 flex flex-col gap-2 border-t border-[#eee9e1] pt-3">
               {user ? (
                 <>
+                  <Link
+                    href="/messages"
+                    onClick={() => setIsOpen(false)}
+                    className="btn-secondary relative w-full"
+                  >
+                    <MessageCircle className="h-4 w-4" /> Messages
+                    {unreadMessages > 0 && (
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-bold text-white">
+                        {unreadMessages > 99 ? "99+" : unreadMessages}
+                      </span>
+                    )}
+                  </Link>
                   <Link href={accountLink} onClick={() => setIsOpen(false)} className="btn-secondary w-full">
                     {user.role === "admin" ? "Admin dashboard" : "My dashboard"}
                   </Link>
@@ -189,8 +247,8 @@ function NavbarContent({ pathname }) {
                   </Link>
                 </>
               )}
-              <Link href="/pets" onClick={() => setIsOpen(false)} className="btn-hero-adopt w-full">
-                Adopt Now <PawPrint className="h-4 w-4" />
+              <Link href="/pet-care" onClick={() => setIsOpen(false)} className="btn-hero-adopt w-full">
+                Pet Care <HeartPulse className="h-4 w-4" />
               </Link>
             </div>
           </div>
