@@ -3,7 +3,6 @@ import connectDB from "@/lib/db";
 import { verifyToken } from "@/lib/auth";
 import Pet from "@/lib/models/Pet";
 import Transaction from "@/lib/models/Transaction";
-import { DELIVERY_FEE, PLATFORM_FEE } from "@/lib/payments/fees";
 
 export async function GET(request, { params }) {
   const authorization = request.headers.get("authorization");
@@ -59,8 +58,8 @@ export async function GET(request, { params }) {
         confirmedAt: order.confirmedAt,
         completedAt: order.completedAt,
         cancelledAt: order.cancelledAt,
-        deliveryFee: order.deliveryFee ?? DELIVERY_FEE,
-        platformFee: order.platformFee ?? PLATFORM_FEE,
+        deliveryFee: order.deliveryFee ?? 0,
+        platformFee: order.platformFee ?? 0,
         pet,
       },
     });

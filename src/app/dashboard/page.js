@@ -7,6 +7,7 @@ import Image from "next/image";
 import { PawPrint, PlusCircle, Edit, Clock, MapPin, ArrowUpRight, MessageCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import DashboardMessages from "@/components/DashboardMessages";
+import ScrollReveal from "@/components/ScrollReveal";
 
 function formatTaka(amount) {
   return `৳${Number(amount || 0).toLocaleString("en-BD", { maximumFractionDigits: 2 })}`;
@@ -14,6 +15,42 @@ function formatTaka(amount) {
 
 function getOrderStatus(order) {
   return order.orderStatus || (order.status === "completed" ? "completed" : order.status);
+}
+
+function cacheOrderForDetails(order) {
+  try {
+    sessionStorage.setItem(`pet-house-order-${order._id}`, JSON.stringify(order));
+    window.dispatchEvent(new Event("pet-house:order-cache"));
+  } catch (cacheError) {
+    console.warn("Could not cache order details for navigation:", cacheError);
+  }
+}
+
+function getCachedUser() {
+  if (typeof window === "undefined") return null;
+  try {
+    return JSON.parse(localStorage.getItem("user") || "null");
+  } catch {
+    return null;
+  }
+}
+
+async function fetchJson(url, options = {}, timeoutMs = 10000) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    const data = await response.json().catch(() => ({}));
+    return { response, data };
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw new Error("The server is taking too long to respond. Please try again.");
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export default function DashboardPage() {
@@ -40,49 +77,89 @@ export default function DashboardPage() {
     };
 
     const loadDashboard = async () => {
-      try {
-        const headers = { Authorization: `Bearer ${token}` };
-        const profileResponse = await fetch("/api/user/profile", { headers });
-        const userData = await profileResponse.json();
-        if (profileResponse.status === 401) {
-          redirectToLogin(userData.error || "Your session has expired. Please sign in again.");
-          return;
-        }
-        if (!profileResponse.ok) throw new Error(userData.error || "Unable to load your profile.");
-        setUser(userData);
+      const headers = { Authorization: `Bearer ${token}` };
+      const cachedUser = getCachedUser();
+      if (cachedUser) {
+        setUser(cachedUser);
+        setLoading(false);
+      }
 
-        if (userData.role === "shelter") {
-          const [petsResponse, ordersResponse] = await Promise.all([
-            fetch("/api/shelter/pets", { headers }),
-            fetch("/api/shelter/orders", { headers }),
-          ]);
-          const [petsData, ordersData] = await Promise.all([
-            petsResponse.json(),
-            ordersResponse.json(),
-          ]);
-          if (petsResponse.status === 401 || ordersResponse.status === 401) {
-            redirectToLogin(
-              petsData.error || ordersData.error || "Your session has expired. Please sign in again."
-            );
+      try {
+        if (cachedUser?.role === "user") {
+          const adoptionsResult = await fetchJson("/api/user/adoptions", { headers });
+          if (adoptionsResult.response.status === 401) {
+            redirectToLogin(adoptionsResult.data.error || "Your session has expired. Please sign in again.");
             return;
           }
-          if (!petsResponse.ok) throw new Error(petsData.error || "Unable to load your pet listings.");
-          if (!ordersResponse.ok) throw new Error(ordersData.error || "Unable to load your orders.");
-          if (!Array.isArray(petsData) || !Array.isArray(ordersData)) {
+          if (!adoptionsResult.response.ok) {
+            throw new Error(adoptionsResult.data.error || "Unable to load your order history.");
+          }
+          if (!Array.isArray(adoptionsResult.data)) {
+            throw new Error("Your order history is unavailable.");
+          }
+          setAdoptions(adoptionsResult.data);
+        } else if (cachedUser?.role === "shelter") {
+          setUser(cachedUser);
+          setLoading(false);
+
+          const profilePromise = fetchJson("/api/user/profile", { headers });
+          const [profileResult, petsResult, ordersResult] = await Promise.all([
+            profilePromise,
+            fetchJson("/api/shelter/pets", { headers }),
+            fetchJson("/api/shelter/orders", { headers }),
+          ]);
+
+          if ([profileResult, petsResult, ordersResult].some(({ response }) => response.status === 401)) {
+            const unauthorized = [profileResult, petsResult, ordersResult].find(
+              ({ response }) => response.status === 401
+            );
+            redirectToLogin(unauthorized.data.error || "Your session has expired. Please sign in again.");
+            return;
+          }
+          if (profileResult.response.ok) setUser(profileResult.data);
+          if (!petsResult.response.ok) throw new Error(petsResult.data.error || "Unable to load your pet listings.");
+          if (!ordersResult.response.ok) throw new Error(ordersResult.data.error || "Unable to load your orders.");
+          if (!Array.isArray(petsResult.data) || !Array.isArray(ordersResult.data)) {
             throw new Error("Shelter dashboard data is unavailable.");
           }
-          setPets(petsData);
-          setShelterOrders(ordersData);
-        } else if (userData.role === "user") {
-          const response = await fetch("/api/user/adoptions", { headers });
-          const adoptionsData = await response.json();
-          if (response.status === 401) {
-            redirectToLogin(adoptionsData.error || "Your session has expired. Please sign in again.");
+          setPets(petsResult.data);
+          setShelterOrders(ordersResult.data);
+        } else {
+          const { response: profileResponse, data: profileData } = await fetchJson(
+            "/api/user/profile",
+            { headers }
+          );
+          if (profileResponse.status === 401) {
+            redirectToLogin(profileData.error || "Your session has expired. Please sign in again.");
             return;
           }
-          if (!response.ok) throw new Error(adoptionsData.error || "Unable to load your order history.");
-          if (!Array.isArray(adoptionsData)) throw new Error("Your order history is unavailable.");
-          setAdoptions(adoptionsData);
+          if (!profileResponse.ok) throw new Error(profileData.error || "Unable to load your profile.");
+          setUser(profileData);
+
+          if (profileData.role === "shelter") {
+            const [petsResult, ordersResult] = await Promise.all([
+              fetchJson("/api/shelter/pets", { headers }),
+              fetchJson("/api/shelter/orders", { headers }),
+            ]);
+            if (petsResult.response.status === 401 || ordersResult.response.status === 401) {
+              redirectToLogin("Your session has expired. Please sign in again.");
+              return;
+            }
+            if (!petsResult.response.ok) throw new Error(petsResult.data.error || "Unable to load your pet listings.");
+            if (!ordersResult.response.ok) throw new Error(ordersResult.data.error || "Unable to load your orders.");
+            setPets(petsResult.data);
+            setShelterOrders(ordersResult.data);
+          } else if (profileData.role === "user") {
+            const adoptionsResult = await fetchJson("/api/user/adoptions", { headers });
+            if (adoptionsResult.response.status === 401) {
+              redirectToLogin(adoptionsResult.data.error || "Your session has expired. Please sign in again.");
+              return;
+            }
+            if (!adoptionsResult.response.ok) {
+              throw new Error(adoptionsResult.data.error || "Unable to load your order history.");
+            }
+            setAdoptions(adoptionsResult.data);
+          }
         }
       } catch (requestError) {
         console.error("Dashboard error:", requestError);
@@ -106,7 +183,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-secondary px-4 py-10 sm:px-6 sm:py-12">
       <div className="mx-auto max-w-6xl">
-        <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <ScrollReveal as="header" className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="font-heading text-3xl font-bold text-dark">Welcome, {user.name}</h1>
             <p className="capitalize text-light">{user.role} Account</p>
@@ -116,7 +193,7 @@ export default function DashboardPage() {
               <PlusCircle className="h-5 w-5" /> Add New Pet
             </Link>
           )}
-        </header>
+        </ScrollReveal>
 
         {error && (
           <div role="alert" className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -124,7 +201,7 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <DashboardMessages />
+        {user.role === "shelter" && <DashboardMessages />}
 
         {user.role === "shelter" && (
           <>
@@ -291,8 +368,13 @@ export default function DashboardPage() {
               <section className="mb-10">
                 <h2 className="mb-4 font-heading text-2xl font-bold text-dark">Pending Orders</h2>
                 <div className="grid gap-4 md:grid-cols-2">
-                  {pendingOrders.map((order) => (
-                    <article key={order._id} className="flex items-center gap-4 rounded-2xl border-2 border-orange-100 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#ffbd8a] hover:bg-[#fffaf5] hover:shadow-md">
+                  {pendingOrders.map((order, index) => (
+                    <ScrollReveal
+                      as="article"
+                      key={order._id}
+                      delay={Math.min(index, 3) * 90}
+                      className="flex items-center gap-4 rounded-2xl border-2 border-orange-100 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#ffbd8a] hover:bg-[#fffaf5] hover:shadow-md"
+                    >
                       {order.pet?.image ? (
                         <span className="relative block h-20 w-20 shrink-0 overflow-hidden rounded-xl">
                           <Image src={order.pet.image} alt={order.pet.name || order.petName} fill sizes="80px" unoptimized className="object-cover" />
@@ -306,24 +388,28 @@ export default function DashboardPage() {
                         <h3 className="truncate font-bold text-dark">{order.pet?.name || order.petName || "Pet"}</h3>
                         <p className="text-xs capitalize text-light">{order.paymentMethod?.replaceAll("_", " ")}</p>
                         <p className="mt-1 text-sm font-semibold text-dark">Payment: {order.status}</p>
-                        <Link href={`/payment/confirmation/${order._id}`} className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-primary transition-colors hover:text-[#b94b00] hover:underline">
+                        <Link
+                          href={`/payment/confirmation/${order._id}`}
+                          onClick={() => cacheOrderForDetails(order)}
+                          className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-primary transition-colors hover:text-[#b94b00] hover:underline"
+                        >
                           View Order <Clock className="h-4 w-4" />
                         </Link>
                       </div>
-                    </article>
+                    </ScrollReveal>
                   ))}
                 </div>
               </section>
             )}
 
             <section>
-              <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+              <ScrollReveal className="mb-4 flex flex-wrap items-end justify-between gap-3">
                 <div>
                   <h2 className="font-heading text-2xl font-bold text-dark">My Pets</h2>
                   <p className="mt-1 text-sm text-light">Confirmed adoptions and their order history.</p>
                 </div>
                 <span className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-dark">{myPets.length} pets</span>
-              </div>
+              </ScrollReveal>
 
               {myPets.length === 0 ? (
                 <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
@@ -336,11 +422,16 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                  {myPets.map((order) => {
+                  {myPets.map((order, index) => {
                     const pet = order.pet;
                     const petName = pet?.name || order.petName || "Pet";
                     return (
-                      <article key={order._id} className="overflow-hidden rounded-2xl border-2 border-orange-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#ffbd8a] hover:bg-[#fffaf5] hover:shadow-lg">
+                      <ScrollReveal
+                        as="article"
+                        key={order._id}
+                        delay={Math.min(index, 3) * 90}
+                        className="overflow-hidden rounded-2xl border-2 border-orange-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#ffbd8a] hover:bg-[#fffaf5] hover:shadow-lg"
+                      >
                         {pet?.image ? (
                           <div className="relative h-52 w-full">
                             <Image src={pet.image} alt={petName} fill sizes="(max-width: 768px) 100vw, 33vw" unoptimized className="object-cover" />
@@ -374,12 +465,16 @@ export default function DashboardPage() {
 
                           <div className="mt-4 flex items-center justify-between border-t border-[#eee9e1] pt-4">
                             <span className="font-bold text-dark">Adoption price {formatTaka(order.adoptionFee ?? pet?.price)}</span>
-                            <Link href={`/payment/confirmation/${order._id}`} className="text-sm font-bold text-primary transition-colors hover:text-[#b94b00] hover:underline">
+                            <Link
+                              href={`/payment/confirmation/${order._id}`}
+                              onClick={() => cacheOrderForDetails(order)}
+                              className="text-sm font-bold text-primary transition-colors hover:text-[#b94b00] hover:underline"
+                            >
                               View Details
                             </Link>
                           </div>
                         </div>
-                      </article>
+                      </ScrollReveal>
                     );
                   })}
                 </div>

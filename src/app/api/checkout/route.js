@@ -89,6 +89,8 @@ export async function POST(request) {
             petName: pet.name,
             amount: adoptionFee,
             adoptionFee,
+            deliveryFee: 0,
+            platformFee: 0,
             status: "completed",
             orderStatus: "completed",
             confirmedAt: now,

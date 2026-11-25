@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -10,11 +10,42 @@ function formatTaka(amount) {
   return `৳${Number(amount || 0).toLocaleString("en-BD", { maximumFractionDigits: 2 })}`;
 }
 
+function clearCachedOrder(cacheKey) {
+  try {
+    sessionStorage.removeItem(cacheKey);
+    window.dispatchEvent(new Event("pet-house:order-cache"));
+  } catch (cacheError) {
+    console.warn("Could not clear cached order details:", cacheError);
+  }
+}
+
+function subscribeToOrderCache(callback) {
+  window.addEventListener("pet-house:order-cache", callback);
+  return () => window.removeEventListener("pet-house:order-cache", callback);
+}
+
+function getCachedOrderSnapshot(orderId) {
+  try {
+    const cachedOrder = JSON.parse(sessionStorage.getItem(`pet-house-order-${orderId}`) || "null");
+    return cachedOrder?._id === orderId ? JSON.stringify(cachedOrder) : null;
+  } catch (cacheError) {
+    console.warn("Could not read cached order details:", cacheError);
+    return null;
+  }
+}
+
 export default function OrderConfirmationPage() {
   const { orderId } = useParams();
   const router = useRouter();
-  const [order, setOrder] = useState(null);
+  const [refreshedOrder, setRefreshedOrder] = useState(null);
   const [error, setError] = useState("");
+  const cachedOrderSnapshot = useSyncExternalStore(
+    subscribeToOrderCache,
+    () => getCachedOrderSnapshot(orderId),
+    () => null
+  );
+  const cachedOrder = cachedOrderSnapshot ? JSON.parse(cachedOrderSnapshot) : null;
+  const order = refreshedOrder || cachedOrder;
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -24,13 +55,17 @@ export default function OrderConfirmationPage() {
     }
 
     let active = true;
+    const cacheKey = `pet-house-order-${orderId}`;
     fetch(`/api/payment/orders/${orderId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(async (response) => {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || "Unable to load this order.");
-        if (active) setOrder(data.order);
+        if (active) {
+          setRefreshedOrder(data.order);
+          clearCachedOrder(cacheKey);
+        }
       })
       .catch((fetchError) => {
         if (active) setError(fetchError.message || "Unable to load this order.");
@@ -41,7 +76,7 @@ export default function OrderConfirmationPage() {
     };
   }, [orderId, router]);
 
-  if (error) {
+  if (error && !order) {
     return (
       <main className="flex min-h-[60vh] flex-col items-center justify-center gap-4 bg-secondary px-4 text-center">
         <p className="text-light">{error}</p>
@@ -82,6 +117,11 @@ export default function OrderConfirmationPage() {
           </div>
 
           <div className="p-5 sm:p-8">
+            {error && (
+              <p role="alert" className="mb-5 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">
+                Showing saved order details. {error}
+              </p>
+            )}
             <div className="mb-6 flex items-start gap-3 rounded-2xl bg-secondary p-4">
               {isCod ? (
                 <Truck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />

@@ -19,7 +19,7 @@ export async function GET(req) {
     
     const transactions = await Transaction.find({ buyer: decoded.id })
       .select(
-        "_id pet petName amount adoptionFee deliveryFee platformFee status orderStatus gateway paymentMethod createdAt confirmedAt completedAt cancelledAt"
+        "_id pet petName amount adoptionFee deliveryFee platformFee status orderStatus gateway paymentMethod customerTransactionId deliveryInfo createdAt confirmedAt completedAt cancelledAt"
       )
       .populate("pet", "name species breed age gender price status updatedAt image")
       .sort({ createdAt: -1 })

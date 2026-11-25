@@ -12,6 +12,7 @@ import {
 import FeaturedPets from "@/components/FeaturedPets";
 import FAQSection from "@/components/FAQSection";
 import HeroPetCarousel from "@/components/HeroPetCarousel";
+import ScrollReveal from "@/components/ScrollReveal";
 
 const adoptionSteps = [
   {
@@ -139,15 +140,20 @@ export default function Home() {
       </section>
 
       <section id="how-it-works" className="section-wrap py-20 sm:py-28">
-        <div className="mx-auto mb-11 max-w-2xl text-center sm:mb-14">
+        <ScrollReveal className="mx-auto mb-11 max-w-2xl text-center sm:mb-14">
           <p className="section-kicker mb-3">A simple way to start</p>
           <h2 className="section-heading">Find your new best friend in four steps</h2>
-        </div>
+        </ScrollReveal>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {adoptionSteps.map((step) => {
+          {adoptionSteps.map((step, index) => {
             const Icon = step.icon;
             return (
-              <article key={step.number} className="rounded-[1.75rem] border-2 border-orange-100 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#ffbd8a] hover:bg-[#fffaf5] hover:shadow-lg sm:p-7">
+              <ScrollReveal
+                as="article"
+                key={step.number}
+                delay={index * 90}
+                className="rounded-[1.75rem] border-2 border-orange-100 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#ffbd8a] hover:bg-[#fffaf5] hover:shadow-lg sm:p-7"
+              >
                 <div className="mb-8 flex items-center justify-between">
                   <span className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-primary">
                     <Icon className="h-6 w-6" />
@@ -158,7 +164,7 @@ export default function Home() {
                 </div>
                 <h3 className="font-heading text-xl font-bold text-dark">{step.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-light">{step.description}</p>
-              </article>
+              </ScrollReveal>
             );
           })}
         </div>
@@ -169,29 +175,34 @@ export default function Home() {
       <section id="about" className="bg-white py-20 sm:py-28">
         <div className="section-wrap">
           <div className="grid items-end gap-6 md:grid-cols-[1.2fr_0.8fr] md:gap-10">
-            <div>
+            <ScrollReveal>
               <p className="section-kicker mb-3">Why Pet House</p>
               <h2 className="section-heading max-w-2xl">
                 A thoughtful start to a lifelong friendship
               </h2>
-            </div>
-            <p className="max-w-lg pb-1 text-base leading-7 text-light">
+            </ScrollReveal>
+            <ScrollReveal delay={100} className="max-w-lg pb-1 text-base leading-7 text-light">
               Adoption should feel clear, caring, and personal. We bring the important details and
               people together so every connection can begin with confidence.
-            </p>
+            </ScrollReveal>
           </div>
 
           <div className="mt-10 grid gap-4 md:mt-14 md:grid-cols-3">
-            {platformFeatures.map((feature) => {
+            {platformFeatures.map((feature, index) => {
               const Icon = feature.icon;
               return (
-                <article key={feature.title} className="rounded-[1.75rem] border-2 border-orange-100 bg-secondary p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#ffbd8a] hover:bg-[#fff1e6] hover:shadow-lg sm:p-8">
+                <ScrollReveal
+                  as="article"
+                  key={feature.title}
+                  delay={index * 100}
+                  className="rounded-[1.75rem] border-2 border-orange-100 bg-secondary p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#ffbd8a] hover:bg-[#fff1e6] hover:shadow-lg sm:p-8"
+                >
                   <span className="mb-8 flex h-12 w-12 items-center justify-center rounded-full bg-white text-primary shadow-sm">
                     <Icon className="h-6 w-6" />
                   </span>
                   <h3 className="font-heading text-xl font-bold text-dark">{feature.title}</h3>
                   <p className="mt-2 text-sm leading-6 text-light">{feature.description}</p>
-                </article>
+                </ScrollReveal>
               );
             })}
           </div>
