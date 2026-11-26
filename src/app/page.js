@@ -6,9 +6,9 @@ import {
   HeartHandshake,
   Home as HomeIcon,
   PawPrint,
-  ShieldCheck,
   Sparkles,
 } from "lucide-react";
+import AboutSection from "@/components/AboutSection";
 import FeaturedPets from "@/components/FeaturedPets";
 import FAQSection from "@/components/FAQSection";
 import HeroPetCarousel from "@/components/HeroPetCarousel";
@@ -38,24 +38,6 @@ const adoptionSteps = [
     icon: HomeIcon,
     title: "Make room for love",
     description: "Take the next step toward giving a pet a safe, caring home.",
-  },
-];
-
-const platformFeatures = [
-  {
-    icon: ShieldCheck,
-    title: "Reviewed pet listings",
-    description: "New listings are reviewed before they appear in the adoption marketplace.",
-  },
-  {
-    icon: HeartHandshake,
-    title: "A more personal match",
-    description: "Learn about each pet and connect with the people who know them best.",
-  },
-  {
-    icon: HomeIcon,
-    title: "For shelters and adopters",
-    description: "A shared place to introduce pets, explore adoption, and manage listings.",
   },
 ];
 
@@ -172,42 +154,7 @@ export default function Home() {
 
       <FeaturedPets />
 
-      <section id="about" className="bg-white py-20 sm:py-28">
-        <div className="section-wrap">
-          <div className="grid items-end gap-6 md:grid-cols-[1.2fr_0.8fr] md:gap-10">
-            <ScrollReveal>
-              <p className="section-kicker mb-3">Why Pet House</p>
-              <h2 className="section-heading max-w-2xl">
-                A thoughtful start to a lifelong friendship
-              </h2>
-            </ScrollReveal>
-            <ScrollReveal delay={100} className="max-w-lg pb-1 text-base leading-7 text-light">
-              Adoption should feel clear, caring, and personal. We bring the important details and
-              people together so every connection can begin with confidence.
-            </ScrollReveal>
-          </div>
-
-          <div className="mt-10 grid gap-4 md:mt-14 md:grid-cols-3">
-            {platformFeatures.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <ScrollReveal
-                  as="article"
-                  key={feature.title}
-                  delay={index * 100}
-                  className="rounded-[1.75rem] border-2 border-orange-100 bg-secondary p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#ffbd8a] hover:bg-[#fff1e6] hover:shadow-lg sm:p-8"
-                >
-                  <span className="mb-8 flex h-12 w-12 items-center justify-center rounded-full bg-white text-primary shadow-sm">
-                    <Icon className="h-6 w-6" />
-                  </span>
-                  <h3 className="font-heading text-xl font-bold text-dark">{feature.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-light">{feature.description}</p>
-                </ScrollReveal>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      <AboutSection />
 
       <FAQSection />
 
