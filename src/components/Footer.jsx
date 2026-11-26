@@ -4,6 +4,7 @@ import FooterColumn from "@/components/footer/FooterColumn";
 import NewsletterForm from "@/components/footer/NewsletterForm";
 import SocialLinks from "@/components/footer/SocialLinks";
 
+
 const EXPLORE_LINKS = [
   { label: "Browse pets", href: "/pets" },
   { label: "Rehome a pet", href: "/shelter/add-pet" },
@@ -21,10 +22,9 @@ const COMPANY_POLICY_LINKS = [
 ];
 
 const SOCIAL_LINKS = [
-  { label: "Facebook", href: "https://www.facebook.com/pethouse", icon: "facebook" },
-  { label: "Instagram", href: "https://www.instagram.com/pethouse", icon: "instagram" },
-  { label: "YouTube", href: "https://www.youtube.com/@pethouse", icon: "youtube" },
-  { label: "X (Twitter)", href: "https://x.com/pethouse", icon: "twitter" },
+  { label: "Facebook", href: "https://www.facebook.com/", icon: "facebook" },
+  { label: "Instagram", href: "https://www.instagram.com/", icon: "instagram" },
+  { label: "YouTube", href: "https://www.youtube.com/", icon: "youtube" },
 ];
 
 const CONTACT_LINKS = [
