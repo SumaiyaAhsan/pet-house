@@ -28,7 +28,12 @@ const SOCIAL_LINKS = [
 ];
 
 const CONTACT_LINKS = [
-  { label: "Email", value: "tamannasa07@gmail.com", href: "mailto:tamannasa07@gmail.com", icon: Mail },
+  {
+    label: "Email",
+    value: "tamannasa07@gmail.com",
+    href: "https://mail.google.com/mail/?view=cm&fs=1&to=tamannasa07%40gmail.com",
+    icon: Mail,
+  },
 ];
 
 export default function Footer() {
@@ -96,6 +101,8 @@ export default function Footer() {
                   <li key={item.label}>
                     <a
                       href={item.href}
+                      target="_blank"
+                      rel="noreferrer noopener"
                       className="group inline-flex items-center gap-3 rounded-sm py-1 text-sm text-[#C9CDD1] transition-colors duration-200 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#111214]"
                     >
                       <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1C1F22] text-white transition-colors duration-200 group-hover:bg-primary">
