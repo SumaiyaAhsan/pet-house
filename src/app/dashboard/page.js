@@ -34,21 +34,28 @@ function getCachedUser() {
   }
 }
 
-async function fetchJson(url, options = {}, timeoutMs = 10000) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+async function fetchJson(url, options = {}, timeoutMs = 30000, retries = 1) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
-  try {
-    const response = await fetch(url, { ...options, signal: controller.signal });
-    const data = await response.json().catch(() => ({}));
-    return { response, data };
-  } catch (error) {
-    if (error.name === "AbortError") {
-      throw new Error("The server is taking too long to respond. Please try again.");
+    try {
+      const response = await fetch(url, { ...options, signal: controller.signal });
+      const data = await response.json().catch(() => ({}));
+      return { response, data };
+    } catch (error) {
+      if (error.name === "AbortError") {
+        // The server may be waking up from sleep (free hosting). Wait and retry once.
+        if (attempt < retries) {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          continue;
+        }
+        throw new Error("The server is taking too long to respond. Please try again.");
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeout);
     }
-    throw error;
-  } finally {
-    clearTimeout(timeout);
   }
 }
 

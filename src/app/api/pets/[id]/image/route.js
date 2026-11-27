@@ -1,11 +1,29 @@
 import connectDB from "@/lib/db";
-import Pet from "../../../../../lib/models/Pet";
+import Pet from "@/lib/models/Pet";
 import sharp from "sharp";
+
+// Cache optimized images in server memory so repeat requests skip
+// the database query and sharp processing entirely.
+const imageCache = global.petImageCache || (global.petImageCache = new Map());
+
+const IMAGE_HEADERS = {
+  "Content-Type": "image/webp",
+  "Cache-Control": "public, max-age=31536000, immutable",
+};
 
 export async function GET(_request, { params }) {
   try {
-    await connectDB();
     const { id } = await params;
+
+    // Fast path: serve from memory cache when the URL version matches.
+    const url = new URL(_request.url);
+    const version = url.searchParams.get("v") || "";
+    const cacheKey = `${id}:${version}`;
+    if (imageCache.has(cacheKey)) {
+      return new Response(imageCache.get(cacheKey), { headers: IMAGE_HEADERS });
+    }
+
+    await connectDB();
     const pet = await Pet.findOne({ _id: id, status: { $in: ["approved", "reserved", "adopted"] } })
       .select("image")
       .lean();
@@ -25,12 +43,11 @@ export async function GET(_request, { params }) {
       .webp({ quality: 76 })
       .toBuffer();
 
-    return new Response(optimizedImage, {
-      headers: {
-        "Content-Type": "image/webp",
-        "Cache-Control": "public, max-age=31536000, immutable",
-      },
-    });
+    // Keep the cache small: store at most 200 images (~200 x 15 KB is fine).
+    if (imageCache.size >= 200) imageCache.clear();
+    imageCache.set(cacheKey, optimizedImage);
+
+    return new Response(optimizedImage, { headers: IMAGE_HEADERS });
   } catch (error) {
     console.error("Pet image API error:", error);
     return new Response("Unable to load image", { status: 500 });
