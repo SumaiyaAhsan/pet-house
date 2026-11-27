@@ -14,10 +14,9 @@ Hosted on Render's free tier with a MongoDB Atlas database. The free tier sleeps
 
 - Browse approved pet listings with photos, breed, age, gender, location, and price.
 - View pet detail pages and start a conversation with the owner.
-- Pay adoption fees through SSLCommerz (bKash, Nagad, Rocket), the in-app wallet, or cash on delivery.
+- Pay adoption fees through SSLCommerz (bKash, Nagad, Rocket) or cash on delivery.
 - Track orders and adoption history from the dashboard.
 - Book services (Grooming, Boarding, Vet Visit).
-- Read pet health care articles by category.
 
 ### For shelters (role: `shelter`)
 
